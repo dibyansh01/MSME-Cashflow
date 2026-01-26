@@ -20,7 +20,32 @@ model Customer {
   name        String
   phone       String?
   email       String?
-  creditTerms Int?     // in days
+  creditTerms Int?
   createdAt   DateTime @default(now())
+
+  invoices    Invoice[]
 }
+
+
+model Invoice {
+  id            String   @id @default(uuid())
+  customerId    String
+  invoiceNo     String
+  invoiceDate   DateTime
+  dueDate       DateTime
+
+  invoiceAmount Float
+  paidAmount    Float    @default(0)
+  outstandingAmount Float
+
+  status        String   // UNPAID, PARTIAL, PAID, OVERDUE
+  createdAt     DateTime @default(now())
+
+  customer Customer @relation(fields: [customerId], references: [id])
+
+  @@index([customerId])
+  @@index([dueDate])
+  @@index([status])
+}
+
 

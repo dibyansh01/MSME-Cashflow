@@ -19,9 +19,13 @@ export default async function DashboardPage() {
 
       <p className="mt-2">Dashboard loaded successfully.</p>
       <div className="mt-6 flex gap-4">
-  <Link href="/customers" className="underline">
-    Customers
-  </Link>
+    <Link href="/customers" className="underline">
+      Customers
+    </Link>
+    <Link href="/invoices" className="underline">
+  Invoices
+</Link>
+
 </div>
 
     </div>
