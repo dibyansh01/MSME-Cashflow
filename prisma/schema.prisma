@@ -42,10 +42,26 @@ model Invoice {
   createdAt     DateTime @default(now())
 
   customer Customer @relation(fields: [customerId], references: [id])
+  followUps FollowUp[]   
 
   @@index([customerId])
   @@index([dueDate])
   @@index([status])
+}
+
+model FollowUp {
+  id              String   @id @default(uuid())
+  invoiceId       String
+  followUpDate    DateTime @default(now())
+  method          String   // CALL, WHATSAPP, EMAIL, VISIT
+  status          String   // PROMISED, NO_RESPONSE, PAID, DISPUTED
+  notes           String?
+  nextFollowUpOn  DateTime?
+  createdAt       DateTime @default(now())
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id])
+
+  @@index([invoiceId])
 }
 
 

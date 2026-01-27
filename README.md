@@ -1,36 +1,73 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MSME Cashflow
 
-## Getting Started
+A specialized Cashflow Management System designed to help Micro, Small, and Medium Enterprises (MSMEs) streamline their invoicing, track payments, and manage customer follow-ups effectively.
 
-First, run the development server:
+## 🚀 Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+*   **Role-Based Access Control**: Secure access for different team members (Owner, Accounts, Sales).
+*   **Customer Management**: Maintain detailed customer profiles including credit terms and contact information.
+*   **Invoice Tracking**: Real-time status tracking of invoices (Unpaid, Partially Paid, Paid, Overdue).
+*   **Follow-up System**: Log and track payment follow-ups (Calls, generic messages, visits) with next follow-up scheduling.
+*   **Dashboard**: Overview of outstanding amounts and cashflow status.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛠️ Tech Stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+*   **Framework**: [Next.js 16](https://nextjs.org/) (App Router)
+*   **Database**: PostgreSQL
+*   **ORM**: [Prisma](https://www.prisma.io/)
+*   **Authentication**: NextAuth.js
+*   **Styling**: Tailwind CSS
+*   **Language**: TypeScript
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📦 Getting Started
 
-## Learn More
+### Prerequisites
 
-To learn more about Next.js, take a look at the following resources:
+*   Node.js (v18 or higher)
+*   PostgreSQL database
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Installation
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1.  **Clone the repository**
+    ```bash
+    git clone <repository-url>
+    cd msme-cashflow
+    ```
 
-## Deploy on Vercel
+2.  **Install dependencies**
+    ```bash
+    npm install
+    ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+3.  **Environment Setup**
+    Create a `.env` file in the root directory and add the following variables:
+    ```env
+    DATABASE_URL="postgresql://user:password@localhost:5432/msme_cashflow?schema=public"
+    NEXTAUTH_SECRET="your-secret-key"
+    NEXTAUTH_URL="http://localhost:3000"
+    ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+4.  **Database Setup**
+    Run the Prisma migrations to create the database tables:
+    ```bash
+    npx prisma migrate dev --name init
+    ```
+
+5.  **Run the application**
+    ```bash
+    npm run dev
+    ```
+
+    Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## 📂 Project Structure
+
+*   `app/`: Next.js App Router pages and layouts.
+*   `components/`: Reusable UI components.
+*   `prisma/`: Database schema and configuration.
+*   `lib/`: Utility functions and shared logic.
+*   `types/`: TypeScript type definitions.
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.

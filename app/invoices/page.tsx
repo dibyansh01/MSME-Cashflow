@@ -63,11 +63,19 @@ export default async function InvoicesPage() {
 
               return (
                 <tr key={inv.id} className="border-t">
-                  <td className="p-2">{inv.invoiceNo}</td>
+                  <td className="p-2">
+                    <Link
+                      href={`/invoices/${inv.id}`}
+                      className="text-blue-600 underline"
+                    >
+                      {inv.invoiceNo}
+                    </Link>
+                  </td>
                   <td className="p-2">{inv.customer.name}</td>
                   <td className="p-2">
                     {new Date(inv.invoiceDate).toLocaleDateString()}
                   </td>
+                  
                   <td className="p-2">
                     {new Date(inv.dueDate).toLocaleDateString()}
                   </td>
