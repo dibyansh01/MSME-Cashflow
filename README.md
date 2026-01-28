@@ -68,6 +68,4 @@ A specialized Cashflow Management System designed to help Micro, Small, and Medi
 *   `lib/`: Utility functions and shared logic.
 *   `types/`: TypeScript type definitions.
 
-## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
