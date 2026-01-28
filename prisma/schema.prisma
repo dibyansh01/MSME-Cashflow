@@ -43,7 +43,7 @@ model Invoice {
 
   customer Customer @relation(fields: [customerId], references: [id])
   followUps FollowUp[]   
-
+  payments   PaymentEntry[] 
   @@index([customerId])
   @@index([dueDate])
   @@index([status])
@@ -58,6 +58,21 @@ model FollowUp {
   notes           String?
   nextFollowUpOn  DateTime?
   createdAt       DateTime @default(now())
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id])
+
+  @@index([invoiceId])
+}
+
+model PaymentEntry {
+  id          String   @id @default(uuid())
+  invoiceId  String
+  amount     Float
+  paymentDate DateTime @default(now())
+  method      String   // CASH, UPI, BANK, CHEQUE, OTHER
+  reference   String?
+  notes       String?
+  createdAt   DateTime @default(now())
 
   invoice Invoice @relation(fields: [invoiceId], references: [id])
 

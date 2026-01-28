@@ -29,6 +29,9 @@ export default async function InvoiceDetailPage({
       followUps: {
         orderBy: { createdAt: 'desc' },
       },
+      payments: {
+        orderBy: { createdAt: 'desc' },
+      }
     },
   })
 
@@ -94,9 +97,13 @@ export default async function InvoiceDetailPage({
         </Link>
 
         {/* Placeholder for Day 6 */}
-        <span className="px-4 py-2 border rounded text-gray-500">
-          Update Payment (Coming Day 6)
-        </span>
+        <Link
+          href={`/invoices/${invoice.id}/payment`}
+          className="px-4 py-2 border rounded"
+        >
+          + Add Payment
+        </Link>
+
       </div>
 
       {/* Follow-up History */}
@@ -130,6 +137,37 @@ export default async function InvoiceDetailPage({
                   {new Date(
                     f.nextFollowUpOn
                   ).toLocaleDateString()}
+                </div>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
+      {/* 🔽 ADD THIS BLOCK BELOW */}
+
+      {/* Payment History */}
+      <div className="border rounded p-4">
+        <h2 className="font-bold mb-3">Payment History</h2>
+
+        {invoice.payments.length === 0 && (
+          <div className="text-gray-500">
+            No payments yet
+          </div>
+        )}
+
+        <ul className="space-y-2">
+          {invoice.payments.map((p) => (
+            <li key={p.id} className="border-b pb-2">
+              <div className="text-sm font-medium">
+                ₹{p.amount.toLocaleString()} — {p.method}
+              </div>
+              <div className="text-xs text-gray-600">
+                {new Date(p.paymentDate).toLocaleDateString()}
+                {p.reference && ` | Ref: ${p.reference}`}
+              </div>
+              {p.notes && (
+                <div className="text-xs text-gray-500">
+                  {p.notes}
                 </div>
               )}
             </li>
