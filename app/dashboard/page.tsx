@@ -5,7 +5,11 @@ import Link from 'next/link'
 import { getDaysOverdue, getAgingBucket } from '@/lib/utils/aging'
 import { getNextNDays } from '@/lib/utils/date'
 import { getCustomerRiskSummary } from '@/lib/analytics/customerRisk'
+import { Card } from '../components/ui/Card'
+import { StatCard } from '../components/ui/StatCard'
+import { Badge } from '../components/ui/Badge'
 
+import { ThemeToggle } from '../components/ui/ThemeToggle'
 
 /**
  * Owner Dashboard Page.
@@ -21,14 +25,13 @@ export default async function DashboardPage() {
   }
 
   const riskSummary = await getCustomerRiskSummary()
-
   const highRisk = riskSummary.filter((c) => c.risk === 'HIGH')
-
 
   const invoices = await prisma.invoice.findMany({
     include: { customer: true },
   })
 
+  // Next 7 days follow-ups
   const upcomingFollowups = await prisma.followUp.findMany({
     where: {
       nextFollowUpOn: {
@@ -49,16 +52,14 @@ export default async function DashboardPage() {
     take: 5,
   })
 
+  // Deduplicate by invoice
   const latestByInvoice = new Map<string, typeof upcomingFollowups[0]>()
-
   for (const fu of upcomingFollowups) {
     if (!latestByInvoice.has(fu.invoiceId)) {
       latestByInvoice.set(fu.invoiceId, fu)
     }
   }
-
   const upcomingUnique = Array.from(latestByInvoice.values())
-
 
   let totalOutstanding = 0
   let totalOverdue = 0
@@ -77,12 +78,10 @@ export default async function DashboardPage() {
 
   for (const inv of invoices) {
     totalOutstanding += inv.outstandingAmount
-
     const daysOverdue = getDaysOverdue(inv.dueDate)
 
     if (inv.outstandingAmount > 0 && daysOverdue > 0) {
       totalOverdue += inv.outstandingAmount
-
       const bucket = getAgingBucket(daysOverdue)
 
       if (bucket !== 'CURRENT') {
@@ -95,9 +94,13 @@ export default async function DashboardPage() {
           amount: 0,
         }
       }
-
-      customerOverdueMap[inv.customerId].amount +=
-        inv.outstandingAmount
+      customerOverdueMap[inv.customerId].amount += inv.outstandingAmount
+    } else if (inv.outstandingAmount > 0) {
+      // Also add to outstanding even if not overdue
+      // But aging buckets logic above only tracks overdue for buckets? 
+      // The original code only added to buckets if daysOverdue > 0.
+      // I'll keep original logic to be safe, but usually current buckets exist too.
+      // logic preserved from original file
     }
   }
 
@@ -106,190 +109,168 @@ export default async function DashboardPage() {
     .slice(0, 5)
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Owner Dashboard</h1>
+    <div className="p-6 md:p-10 space-y-8 max-w-7xl mx-auto animate-fade-in">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-blue-700 to-blue-500 bg-clip-text text-transparent dark:from-blue-400 dark:to-blue-200">
+            Owner Dashboard
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Overview of your cash flow and customer risks
+          </p>
+        </div>
 
-        <div className="flex gap-4">
-          <Link href="/customers" className="underline">
-            Customers
-          </Link>
-          <Link href="/invoices" className="underline">
-            Invoices
-          </Link>
-          <Link href="/followups" className="underline">
-            Follow-ups
-          </Link>
-
+        <div className="flex items-center gap-3">
+          <div className="flex gap-3 text-sm font-medium mr-2">
+            <Link href="/customers" className="px-4 py-2 rounded-lg bg-card border border-border hover:bg-secondary/50 transition-colors">
+              Customers
+            </Link>
+            <Link href="/invoices" className="px-4 py-2 rounded-lg bg-card border border-border hover:bg-secondary/50 transition-colors">
+              Invoices
+            </Link>
+            <Link href="/followups" className="px-4 py-2 rounded-lg bg-card border border-border hover:bg-secondary/50 transition-colors">
+              Follow-ups
+            </Link>
+          </div>
+          <ThemeToggle />
         </div>
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="border rounded p-4">
-          <div className="text-sm text-gray-500">
-            Total Outstanding
-          </div>
-          <div className="text-2xl font-bold">
-            ₹{totalOutstanding.toLocaleString()}
-          </div>
-        </div>
-
-        <div className="border rounded p-4">
-          <div className="text-sm text-gray-500">
-            Total Overdue
-          </div>
-          <div className="text-2xl font-bold text-red-600">
-            ₹{totalOverdue.toLocaleString()}
-          </div>
-        </div>
-
-        <div className="border rounded p-4">
-          <div className="text-sm text-gray-500">
-            Overdue Customers
-          </div>
-          <div className="text-2xl font-bold">
-            {topDefaulters.length}
-          </div>
-        </div>
-        <div className="border rounded p-4">
-          <h2 className="font-bold mb-2">
-            Upcoming Follow-ups (Next 7 Days)
-          </h2>
-
-          {upcomingFollowups.length === 0 && (
-            <div className="text-gray-500">
-              No upcoming follow-ups
-            </div>
-          )}
-
-          <ul className="text-sm space-y-1">
-            {upcomingUnique.map((f) => (
-              <li key={f.id}>
-                {f.invoice.customer.name} —{' '}
-                {new Date(
-                  f.nextFollowUpOn!
-                ).toLocaleDateString()}
-              </li>
-            ))}
-          </ul>
-        </div>
-
-      </div>
-      {/* high risk customers */}
-      <div className="border rounded p-4 mt-6">
-        <h2 className="text-lg font-semibold mb-3">
-          High Risk Customers
-        </h2>
-
-        {highRisk.length === 0 ? (
-          <p className="text-sm text-gray-500">
-            🎉 No high risk customers
-          </p>
-        ) : (
-          <table className="w-full text-sm">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="p-2 text-left">Customer</th>
-                <th className="p-2 text-left">Outstanding</th>
-                <th className="p-2 text-left">Oldest Due (Days)</th>
-                <th className="p-2 text-left">Broken Promises</th>
-                <th className="p-2 text-left">Risk</th>
-              </tr>
-            </thead>
-            <tbody>
-              {highRisk.map((c) => (
-                <tr key={c.customerId} className="border-t">
-                  <td className="p-2">{c.customerName}</td>
-                  <td className="p-2">₹{c.totalOutstanding}</td>
-                  <td className="p-2">{c.oldestDueDays}</td>
-                  <td className="p-2">{c.brokenPromises}</td>
-                  <td className="p-2 text-red-600 font-semibold">
-                    {c.risk}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <StatCard
+          title="Total Outstanding"
+          value={`₹${totalOutstanding.toLocaleString()}`}
+          subtext="Total pending collection"
+        />
+        <StatCard
+          title="Total Overdue"
+          value={`₹${totalOverdue.toLocaleString()}`}
+          color="danger"
+          subtext="Requires immediate attention"
+        />
+        <StatCard
+          title="Overdue Customers"
+          value={topDefaulters.length}
+          color="warning"
+          subtext="Customers with overdue invoices"
+        />
       </div>
 
-
-      {/* Aging Buckets */}
-      <div className="border rounded p-4">
-        <h2 className="font-bold mb-3">Aging Summary</h2>
-
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b">
-              <th className="text-left p-2">Bucket</th>
-              <th className="text-left p-2">Outstanding</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td className="p-2">0–30 Days</td>
-              <td className="p-2">
-                ₹{agingBuckets['0-30'].toLocaleString()}
-              </td>
-            </tr>
-            <tr>
-              <td className="p-2">31–60 Days</td>
-              <td className="p-2">
-                ₹{agingBuckets['31-60'].toLocaleString()}
-              </td>
-            </tr>
-            <tr>
-              <td className="p-2">61–90 Days</td>
-              <td className="p-2">
-                ₹{agingBuckets['61-90'].toLocaleString()}
-              </td>
-            </tr>
-            <tr>
-              <td className="p-2">90+ Days</td>
-              <td className="p-2">
-                ₹{agingBuckets['90+'].toLocaleString()}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      {/* Top Defaulters */}
-      <div className="border rounded p-4">
-        <h2 className="font-bold mb-3">
-          Top Overdue Customers
-        </h2>
-
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b">
-              <th className="text-left p-2">Customer</th>
-              <th className="text-left p-2">Overdue Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            {topDefaulters.map((c, idx) => (
-              <tr key={idx} className="border-t">
-                <td className="p-2">{c.customerName}</td>
-                <td className="p-2 text-red-600 font-medium">
-                  ₹{c.amount.toLocaleString()}
-                </td>
-              </tr>
-            ))}
-
-            {topDefaulters.length === 0 && (
-              <tr>
-                <td
-                  colSpan={2}
-                  className="p-4 text-center text-gray-500"
-                >
-                  No overdue customers 🎉
-                </td>
-              </tr>
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        {/* Upcoming Follow-ups */}
+        <div className="xl:col-span-1">
+          <Card title="Upcoming Follow-ups (7 Days)" className="h-full">
+            {upcomingUnique.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-10 text-gray-500">
+                <p>No upcoming follow-ups 🎉</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {upcomingUnique.map((f) => (
+                  <div key={f.id} className="flex items-center justify-between p-3 rounded-lg bg-secondary/30 border border-secondary">
+                    <div>
+                      <p className="font-semibold text-sm">{f.invoice.customer.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(f.nextFollowUpOn!).toLocaleDateString(undefined, {
+                          weekday: 'short',
+                          month: 'short',
+                          day: 'numeric'
+                        })}
+                      </p>
+                    </div>
+                    <Link href={`/followups`} className="text-xs text-primary hover:underline">
+                      View
+                    </Link>
+                  </div>
+                ))}
+              </div>
             )}
-          </tbody>
-        </table>
+          </Card>
+        </div>
+
+        {/* High Risk Customers */}
+        <div className="xl:col-span-2">
+          <Card title="High Risk Customers" className="h-full">
+            {highRisk.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-10 text-gray-500">
+                <p>🎉 No high risk customers</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead className="text-xs text-gray-500 uppercase bg-secondary/50 rounded-lg">
+                    <tr>
+                      <th className="px-4 py-3 rounded-l-lg">Customer</th>
+                      <th className="px-4 py-3">Outstanding</th>
+                      <th className="px-4 py-3">Oldest Due</th>
+                      <th className="px-4 py-3">Broken Promises</th>
+                      <th className="px-4 py-3 rounded-r-lg">Risk</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {highRisk.map((c) => (
+                      <tr key={c.customerId} className="border-b border-border last:border-0 hover:bg-secondary/20 transition-colors">
+                        <td className="px-4 py-3 font-medium">{c.customerName}</td>
+                        <td className="px-4 py-3">₹{c.totalOutstanding.toLocaleString()}</td>
+                        <td className="px-4 py-3">{c.oldestDueDays} days</td>
+                        <td className="px-4 py-3 text-center">{c.brokenPromises}</td>
+                        <td className="px-4 py-3">
+                          <Badge variant="danger">HIGH</Badge>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </Card>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Aging Summary */}
+        <Card title="Aging Summary">
+          <div className="overflow-hidden rounded-lg border border-border">
+            <table className="w-full text-sm">
+              <thead className="bg-secondary/50">
+                <tr>
+                  <th className="p-3 text-left font-medium text-gray-500">Bucket</th>
+                  <th className="p-3 text-right font-medium text-gray-500">Amount</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {Object.entries(agingBuckets).map(([bucket, amount]) => (
+                  <tr key={bucket} className="hover:bg-secondary/20">
+                    <td className="p-3 font-medium">{bucket} Days</td>
+                    <td className="p-3 text-right">₹{amount.toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+
+        {/* Top Defaulters */}
+        <Card title="Top Overdue Customers">
+          <div className="space-y-3">
+            {topDefaulters.length === 0 ? (
+              <p className="text-center text-gray-500 py-6">No overdue customers 🎉</p>
+            ) : (
+              topDefaulters.map((c, idx) => (
+                <div key={idx} className="flex items-center justify-between p-3 rounded-lg bg-secondary/10 border border-transparent hover:border-secondary transition-all">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">
+                      {idx + 1}
+                    </div>
+                    <span className="font-medium">{c.customerName}</span>
+                  </div>
+                  <span className="font-bold text-danger">₹{c.amount.toLocaleString()}</span>
+                </div>
+              ))
+            )}
+          </div>
+        </Card>
       </div>
     </div>
   )

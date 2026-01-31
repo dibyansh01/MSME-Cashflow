@@ -5,6 +5,8 @@ import { prisma } from '@/lib/db/prisma'
 import { getNextNDays } from '@/lib/utils/date'
 import { getReminderMessage } from '@/lib/collections/messageTemplates'
 import CopyButton from '@/components/copyButton'
+import WhatsAppActions from '@/components/WhatsAppActions'
+
 
 
 
@@ -188,7 +190,8 @@ export default async function FollowupsQueuePage() {
                             rows={3}
                           />
 
-                          <CopyButton text={message} />
+                        
+                          <WhatsAppActions message={message} />
                         </div>
                       )
                     })()}
