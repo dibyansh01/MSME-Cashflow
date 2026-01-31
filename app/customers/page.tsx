@@ -3,6 +3,12 @@ import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/db/prisma'
 import Link from 'next/link'
 
+/**
+ * Customers List Page.
+ * Displays a list of all customers with their contact details.
+ * Allows adding new customers.
+ * Fetches data server-side.
+ */
 export default async function CustomersPage() {
   const session = await getServerSession()
 

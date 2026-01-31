@@ -3,6 +3,12 @@ import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/db/prisma'
 import Link from 'next/link'
 
+/**
+ * Invoices List Page.
+ * Displays a table of all invoices with their status (Paid, Unpaid, Overdue, Partial).
+ * Allows navigation to individual invoice details.
+ * Fetches data server-side.
+ */
 export default async function InvoicesPage() {
   const session = await getServerSession()
 
@@ -75,7 +81,7 @@ export default async function InvoicesPage() {
                   <td className="p-2">
                     {new Date(inv.invoiceDate).toLocaleDateString()}
                   </td>
-                  
+
                   <td className="p-2">
                     {new Date(inv.dueDate).toLocaleDateString()}
                   </td>

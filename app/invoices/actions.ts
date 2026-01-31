@@ -3,6 +3,11 @@
 import { prisma } from '@/lib/db/prisma'
 import { revalidatePath } from 'next/cache'
 
+/**
+ * Server action to create a new invoice.
+ * Validates input data, calculates due date based on credit terms, and updates database.
+ * @param {FormData} formData - Form data containing invoice details
+ */
 export async function createInvoice(formData: FormData) {
   const customerId = formData.get('customerId') as string
   const invoiceNo = formData.get('invoiceNo') as string

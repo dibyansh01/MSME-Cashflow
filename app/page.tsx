@@ -1,5 +1,10 @@
 import Image from "next/image";
 
+/**
+ * Landing page of the application.
+ * Currently serves as a placeholder/starter page.
+ * Users should be redirected to login or dashboard from here.
+ */
 export default function Home() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">

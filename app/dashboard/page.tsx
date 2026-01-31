@@ -3,7 +3,16 @@ import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/db/prisma'
 import Link from 'next/link'
 import { getDaysOverdue, getAgingBucket } from '@/lib/utils/aging'
+import { getNextNDays } from '@/lib/utils/date'
+import { getCustomerRiskSummary } from '@/lib/analytics/customerRisk'
 
+
+/**
+ * Owner Dashboard Page.
+ * Displays key performance indicators (KPIs) like total outstanding, overdue, and high-risk customers.
+ * Fetches data server-side using Prisma.
+ * Protected route: Redirects to login if session is invalid.
+ */
 export default async function DashboardPage() {
   const session = await getServerSession()
 
@@ -11,9 +20,45 @@ export default async function DashboardPage() {
     redirect('/login')
   }
 
+  const riskSummary = await getCustomerRiskSummary()
+
+  const highRisk = riskSummary.filter((c) => c.risk === 'HIGH')
+
+
   const invoices = await prisma.invoice.findMany({
     include: { customer: true },
   })
+
+  const upcomingFollowups = await prisma.followUp.findMany({
+    where: {
+      nextFollowUpOn: {
+        not: null,
+        gt: new Date(),
+        lte: getNextNDays(7).future,
+      },
+      invoice: {
+        outstandingAmount: { gt: 0 },
+      },
+    },
+    include: {
+      invoice: {
+        include: { customer: true },
+      },
+    },
+    orderBy: { nextFollowUpOn: 'asc' },
+    take: 5,
+  })
+
+  const latestByInvoice = new Map<string, typeof upcomingFollowups[0]>()
+
+  for (const fu of upcomingFollowups) {
+    if (!latestByInvoice.has(fu.invoiceId)) {
+      latestByInvoice.set(fu.invoiceId, fu)
+    }
+  }
+
+  const upcomingUnique = Array.from(latestByInvoice.values())
+
 
   let totalOutstanding = 0
   let totalOverdue = 0
@@ -72,6 +117,10 @@ export default async function DashboardPage() {
           <Link href="/invoices" className="underline">
             Invoices
           </Link>
+          <Link href="/followups" className="underline">
+            Follow-ups
+          </Link>
+
         </div>
       </div>
 
@@ -103,7 +152,68 @@ export default async function DashboardPage() {
             {topDefaulters.length}
           </div>
         </div>
+        <div className="border rounded p-4">
+          <h2 className="font-bold mb-2">
+            Upcoming Follow-ups (Next 7 Days)
+          </h2>
+
+          {upcomingFollowups.length === 0 && (
+            <div className="text-gray-500">
+              No upcoming follow-ups
+            </div>
+          )}
+
+          <ul className="text-sm space-y-1">
+            {upcomingUnique.map((f) => (
+              <li key={f.id}>
+                {f.invoice.customer.name} —{' '}
+                {new Date(
+                  f.nextFollowUpOn!
+                ).toLocaleDateString()}
+              </li>
+            ))}
+          </ul>
+        </div>
+
       </div>
+      {/* high risk customers */}
+      <div className="border rounded p-4 mt-6">
+        <h2 className="text-lg font-semibold mb-3">
+          High Risk Customers
+        </h2>
+
+        {highRisk.length === 0 ? (
+          <p className="text-sm text-gray-500">
+            🎉 No high risk customers
+          </p>
+        ) : (
+          <table className="w-full text-sm">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="p-2 text-left">Customer</th>
+                <th className="p-2 text-left">Outstanding</th>
+                <th className="p-2 text-left">Oldest Due (Days)</th>
+                <th className="p-2 text-left">Broken Promises</th>
+                <th className="p-2 text-left">Risk</th>
+              </tr>
+            </thead>
+            <tbody>
+              {highRisk.map((c) => (
+                <tr key={c.customerId} className="border-t">
+                  <td className="p-2">{c.customerName}</td>
+                  <td className="p-2">₹{c.totalOutstanding}</td>
+                  <td className="p-2">{c.oldestDueDays}</td>
+                  <td className="p-2">{c.brokenPromises}</td>
+                  <td className="p-2 text-red-600 font-semibold">
+                    {c.risk}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
 
       {/* Aging Buckets */}
       <div className="border rounded p-4">
