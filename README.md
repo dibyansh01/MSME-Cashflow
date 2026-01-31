@@ -68,6 +68,34 @@ A specialized Cashflow Management System designed to help Micro, Small, and Medi
 *   `lib/`: Utility functions and shared logic.
 *   `types/`: TypeScript type definitions.
 
-## 🤝 Contributing
+## 🧠 Logic Flow & Architecture
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+### 1. Authentication Flow
+- **Framework**: `NextAuth.js` with Credentials Provider.
+- **Process**: Users log in via `/login`. The system verifies email/password against the `User` table using `bcrypt` for hash comparison.
+- **Session**: On success, a JWT session is created containing `userId` and `role`. Protected pages check this session via `getServerSession`.
+
+### 2. Invoice Lifecycle
+- **Creation**: Users create invoices linked to a `Customer`. Due dates are auto-calculated based on the customer's `creditTerms`.
+- **Status Updates**:
+    - **UNPAID**: Default status on creation.
+    - **PARTIAL**: When `paidAmount > 0` but `< invoiceAmount`.
+    - **PAID**: When `outstandingAmount === 0`.
+    - **OVERDUE**: Calculated dynamically if `today > dueDate` and `outstandingAmount > 0`.
+
+### 3. Collection Strategy (Smart Queue)
+The `FollowupsQueuePage` (`/followups`) acts as the central hub for collections.
+- **Priority**:
+    1.  **Overdue Invoices**: Always shown at the top.
+    2.  **Scheduled Follow-ups**: Items with a `nextFollowUpOn` date within the next 7 days.
+    3.  **High Value**: Ties are broken by the highest outstanding amount.
+- **Deduplication**: Only the latest actionable follow-up per invoice is shown.
+
+### 4. Database Schema
+- **User**: System users (Owners, Staff).
+- **Customer**: Clients with credit terms.
+- **Invoice**: Financial records linked to Customers.
+- **PaymentEntry**: Records of payments made against invoices.
+- **FollowUp**: Logs of interactions (Calls, Visits) regarding an invoice.
+
+

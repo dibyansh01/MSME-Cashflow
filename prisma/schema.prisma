@@ -6,6 +6,7 @@ datasource db {
   provider = "postgresql"
 }
 
+/// Represents a system user with access roles
 model User {
   id        String   @id @default(uuid())
   name      String
@@ -15,28 +16,29 @@ model User {
   createdAt DateTime @default(now())
 }
 
+/// Represents a client or customer of the business
 model Customer {
   id          String   @id @default(uuid())
   name        String
   phone       String?
   email       String?
-  creditTerms Int?
+  creditTerms Int?     // Number of days for credit
   createdAt   DateTime @default(now())
 
   invoices    Invoice[]
 }
 
-
+/// Represents an invoice generated for a customer
 model Invoice {
   id            String   @id @default(uuid())
   customerId    String
-  invoiceNo     String
+  invoiceNo     String   // Unique invoice number
   invoiceDate   DateTime
   dueDate       DateTime
-
+  
   invoiceAmount Float
   paidAmount    Float    @default(0)
-  outstandingAmount Float
+  outstandingAmount Float // Remaining amount to be paid
 
   status        String   // UNPAID, PARTIAL, PAID, OVERDUE
   createdAt     DateTime @default(now())
@@ -49,6 +51,7 @@ model Invoice {
   @@index([status])
 }
 
+/// Represents a follow-up action taken for an invoice
 model FollowUp {
   id              String   @id @default(uuid())
   invoiceId       String
@@ -64,13 +67,14 @@ model FollowUp {
   @@index([invoiceId])
 }
 
+/// Represents a payment received for an invoice
 model PaymentEntry {
   id          String   @id @default(uuid())
   invoiceId  String
   amount     Float
   paymentDate DateTime @default(now())
   method      String   // CASH, UPI, BANK, CHEQUE, OTHER
-  reference   String?
+  reference   String?  // Transaction ID or Cheque Number
   notes       String?
   createdAt   DateTime @default(now())
 
@@ -78,5 +82,3 @@ model PaymentEntry {
 
   @@index([invoiceId])
 }
-
-

@@ -11,6 +11,11 @@ const ERROR_MESSAGE_MAP: Record<string, string> = {
   default: 'Something went wrong. Please try again.',
 }
 
+/**
+ * Login page component.
+ * Handles user authentication using email and password.
+ * Uses NextAuth `signIn` method and provides feedback on success/failure.
+ */
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
