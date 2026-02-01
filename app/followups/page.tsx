@@ -7,27 +7,35 @@ import { getReminderMessage } from '@/lib/collections/messageTemplates'
 import WhatsAppActions from '@/components/WhatsAppActions'
 import { Pagination } from '@/app/components/ui/Pagination'
 import { Badge } from '@/app/components/ui/Badge'
+import { Search } from '@/app/components/ui/Search'
+import { Filter } from '@/app/components/ui/Filter'
+import { DateRangeFilter } from '@/app/components/ui/DateRangeFilter'
 
 /**
  * Follow-ups Queue Page ("Collections").
  * Displays a prioritized list of invoices requiring attention.
- * Implements server-side pagination efficiently by sorting at the Database level.
- * Priority: Overdue invoices first, then earliest follow-up date.
+ * Implements server-side pagination, search, and date filtering.
  */
-import { Search } from '@/app/components/ui/Search'
-import { Filter } from '@/app/components/ui/Filter'
-
-// ...
-
 export default async function FollowupsQueuePage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; q?: string; status?: string }>
+  searchParams: Promise<{
+    page?: string
+    q?: string
+    status?: string
+    nextFollowUpStart?: string
+    nextFollowUpEnd?: string
+    dueDateStart?: string
+    dueDateEnd?: string
+  }>
 }) {
   const session = await getServerSession()
   if (!session) redirect('/login')
 
-  const { page, q, status } = await searchParams
+  const resolvedParams = await searchParams
+  const { page, q, status } = resolvedParams
+  const { nextFollowUpStart, nextFollowUpEnd, dueDateStart, dueDateEnd } = resolvedParams
+
   const currentPage = Number(page || '1')
   const pageSize = 10
   const query = q || ''
@@ -36,7 +44,6 @@ export default async function FollowupsQueuePage({
   // --- PURE DATES ---
   const today = getNextNDays(7).now
   today.setHours(0, 0, 0, 0)
-
   const next7Days = getNextNDays(7).future
 
   // --- PAGINATED QUERY ---
@@ -47,17 +54,40 @@ export default async function FollowupsQueuePage({
           outstandingAmount: { gt: 0 },
         },
       },
-      {
-        OR: [
-          { nextFollowUpOn: { lte: next7Days } },
-          {
-            invoice: {
-              dueDate: { lt: today },
-            },
-          },
-        ],
-      }
     ],
+  }
+
+  // --- DATE FILTERS LOGIC ---
+  const hasDateFilters = nextFollowUpStart || nextFollowUpEnd || dueDateStart || dueDateEnd
+
+  if (hasDateFilters) {
+    if (nextFollowUpStart || nextFollowUpEnd) {
+      // If sorting/filtering by "Follow Up Date", we check the followUpDate column itself
+      // because the items in the queue ARE the follow-ups.
+      const dateFilter: any = {}
+      if (nextFollowUpStart) dateFilter.gte = new Date(nextFollowUpStart)
+      if (nextFollowUpEnd) dateFilter.lte = new Date(nextFollowUpEnd)
+      whereClause.AND.push({ followUpDate: dateFilter })
+    }
+    if (dueDateStart || dueDateEnd) {
+      const dateFilter: any = {}
+      if (dueDateStart) dateFilter.gte = new Date(dueDateStart)
+      if (dueDateEnd) dateFilter.lte = new Date(dueDateEnd)
+      whereClause.AND.push({ invoice: { dueDate: dateFilter } })
+    }
+  } else {
+    // Default View: Show Overdue OR Upcoming Follow-ups (Next 7 days)
+    // We check `followUpDate` for the upcoming tasks.
+    whereClause.AND.push({
+      OR: [
+        { followUpDate: { lte: next7Days } },
+        {
+          invoice: {
+            dueDate: { lt: today },
+          },
+        },
+      ],
+    })
   }
 
   // Apply Search
@@ -87,8 +117,8 @@ export default async function FollowupsQueuePage({
         },
       },
       orderBy: [
-        { nextFollowUpOn: 'asc' }, // Earliest attention needed first
-        { createdAt: 'desc' }      // Tie-breaker
+        { followUpDate: 'asc' }, // Order by the actual scheduled date of the task
+        { createdAt: 'desc' }
       ],
       skip: (currentPage - 1) * pageSize,
       take: pageSize,
@@ -100,19 +130,24 @@ export default async function FollowupsQueuePage({
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-        <h1 className="text-2xl font-bold">Collections Queue</h1>
-        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
-          <Search placeholder="Search customer..." />
-          <Filter
-            paramName="status"
-            label="Last Status"
-            options={[
-              { label: 'Promised', value: 'PROMISED' },
-              { label: 'No Response', value: 'NO_RESPONSE' },
-              { label: 'Disputed', value: 'DISPUTED' },
-            ]}
-          />
+      <div className="flex flex-col gap-6 mb-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <h1 className="text-2xl font-bold">Collections Queue</h1>
+          <div className="flex flex-wrap items-end gap-3 w-full md:w-auto">
+            <Search placeholder="Search customer..." />
+            <Filter
+              paramName="status"
+              label="Last Status"
+              options={[
+                { label: 'Scheduled', value: 'SCHEDULED' },
+                { label: 'Promised', value: 'PROMISED' },
+                { label: 'No Response', value: 'NO_RESPONSE' },
+                { label: 'Disputed', value: 'DISPUTED' },
+              ]}
+            />
+            <DateRangeFilter label="Next Follow-up" paramPrefix="nextFollowUp" />
+            <DateRangeFilter label="Due Date" paramPrefix="dueDate" />
+          </div>
         </div>
       </div>
 
@@ -125,7 +160,7 @@ export default async function FollowupsQueuePage({
               <th className="p-3 text-left font-medium text-muted-foreground">Outstanding</th>
               <th className="p-3 text-left font-medium text-muted-foreground">Due Date</th>
               <th className="p-3 text-left font-medium text-muted-foreground">Method</th>
-              <th className="p-3 text-left font-medium text-muted-foreground">Last Status</th>
+              <th className="p-3 text-left font-medium text-muted-foreground">Status</th>
               <th className="p-3 text-left font-medium text-muted-foreground">Next Follow-up</th>
               <th className="p-3 text-left font-medium text-muted-foreground">Action</th>
               <th className="p-3 text-left font-medium text-muted-foreground">Reminder Message</th>
@@ -135,6 +170,11 @@ export default async function FollowupsQueuePage({
             {followUps.map((fu) => {
               const inv = fu.invoice
               const overdue = inv.dueDate < today
+
+              // Display Logic: 
+              // If status is SCHEDULED, this row IS the next follow up.
+              // If status is historical (e.g. CALL), check nextFollowUpOn.
+              const displayDate = fu.status === 'SCHEDULED' ? fu.followUpDate : fu.nextFollowUpOn
 
               return (
                 <tr key={fu.id} className="hover:bg-muted/50 transition-colors">
@@ -178,9 +218,9 @@ export default async function FollowupsQueuePage({
                     })()}
                   </td>
 
-                  <td className="p-3">
-                    {fu.nextFollowUpOn
-                      ? new Date(fu.nextFollowUpOn).toLocaleDateString()
+                  <td className="p-3 font-medium">
+                    {displayDate
+                      ? new Date(displayDate).toLocaleDateString()
                       : '-'}
                   </td>
 

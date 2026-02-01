@@ -7,7 +7,7 @@ import Link from 'next/link'
 export default async function InvoiceDetailPage({
   params,
 }: {
-  params: Promise<{  id: string }>
+  params: Promise<{ id: string }>
 }) {
   const session = await getServerSession()
 
@@ -16,7 +16,7 @@ export default async function InvoiceDetailPage({
   if (!id) {
     return <div className="p-6">Invalid invoice ID </div>
   }
-  
+
 
   if (!session) {
     redirect('/login')
@@ -123,8 +123,10 @@ export default async function InvoiceDetailPage({
               className="border-b pb-2"
             >
               <div className="text-sm">
-                <strong>{f.method}</strong> —{' '}
-                {f.status}
+                <strong>{f.method}</strong> — {f.status}
+                <span className="text-gray-500 ml-2 text-xs">
+                  {new Date(f.followUpDate).toLocaleDateString()}
+                </span>
               </div>
               {f.notes && (
                 <div className="text-gray-600">

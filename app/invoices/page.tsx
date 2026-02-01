@@ -134,7 +134,7 @@ export default async function InvoicesPage({
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <h1 className="text-2xl font-bold">Invoices</h1>
         <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
-          <Search placeholder="Search invoices..." />
+          <Search placeholder="Search invoice # or customer..." />
           <Filter
             paramName="status"
             label="Status"

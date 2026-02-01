@@ -3,26 +3,14 @@
 import { prisma } from '@/lib/db/prisma'
 import { revalidatePath } from 'next/cache'
 
-/**
- * Server action to create a new invoice.
- * Validates input data, calculates due date based on credit terms, and updates database.
- * @param {FormData} formData - Form data containing invoice details
- */
 export async function createInvoice(formData: FormData) {
   const customerId = formData.get('customerId') as string
   const invoiceNo = formData.get('invoiceNo') as string
   const invoiceDateStr = formData.get('invoiceDate') as string
-
   const invoiceAmountStr = formData.get('invoiceAmount') as string
   const paidAmountStr = formData.get('paidAmount') as string
 
-  if (
-    !customerId ||
-    !invoiceNo ||
-    !invoiceDateStr ||
-    !invoiceAmountStr ||
-    !paidAmountStr
-  ) {
+  if (!customerId || !invoiceNo || !invoiceDateStr || !invoiceAmountStr || !paidAmountStr) {
     throw new Error('Missing required fields')
   }
 
@@ -38,23 +26,31 @@ export async function createInvoice(formData: FormData) {
 
   const customer = await prisma.customer.findUnique({
     where: { id: customerId },
+    select: { creditTerms: true },
   })
 
   if (!customer) {
     throw new Error('Customer not found')
   }
 
-  const creditDays = customer.creditTerms || 0
+  const creditDays = customer.creditTerms ?? 0
   const dueDate = new Date(invoiceDate)
   dueDate.setDate(dueDate.getDate() + creditDays)
 
   let status: 'UNPAID' | 'PARTIAL' | 'PAID' = 'UNPAID'
+  if (outstandingAmount === 0) status = 'PAID'
+  else if (paidAmount > 0) status = 'PARTIAL'
 
-  if (outstandingAmount === 0) {
-    status = 'PAID'
-  } else if (paidAmount > 0) {
-    status = 'PARTIAL'
-  }
+  console.log({
+    customerId,
+    invoiceNo,
+    invoiceDate,
+    dueDate,
+    invoiceAmount,
+    paidAmount,
+    outstandingAmount,
+    status,
+  })
 
   await prisma.invoice.create({
     data: {

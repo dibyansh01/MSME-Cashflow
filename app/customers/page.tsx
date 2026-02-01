@@ -78,7 +78,14 @@ export default async function CustomersPage({
           <tbody className="divide-y divide-border">
             {customers.map((c) => (
               <tr key={c.id} className="hover:bg-muted/50 transition-colors">
-                <td className="p-3 font-medium">{c.name}</td>
+                <td className="p-3 font-medium">
+                  <Link
+                    href={`/invoices?q=${encodeURIComponent(c.name)}`}
+                    className="text-primary hover:underline"
+                  >
+                    {c.name}
+                  </Link>
+                </td>
                 <td className="p-3">{c.phone || '-'}</td>
                 <td className="p-3">{c.email || '-'}</td>
                 <td className="p-3">
