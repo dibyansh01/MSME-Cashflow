@@ -78,6 +78,7 @@ export default async function InvoicesPage({
       OR: [
         { invoiceNo: { contains: query, mode: 'insensitive' } },
         { customer: { name: { contains: query, mode: 'insensitive' } } },
+        { customer: { location: { contains: query, mode: 'insensitive' } } },
       ],
     })
   }
@@ -179,6 +180,7 @@ export default async function InvoicesPage({
             <tr>
               <th className="text-left p-3 font-medium text-muted-foreground">Invoice #</th>
               <th className="text-left p-3 font-medium text-muted-foreground">Customer</th>
+              <th className="text-left p-3 font-medium text-muted-foreground">Location</th>
               <th className="text-left p-3 font-medium text-muted-foreground">Invoice Date</th>
               <th className="text-left p-3 font-medium text-muted-foreground">Due Date</th>
               <th className="text-left p-3 font-medium text-muted-foreground">Invoice Amount</th>
@@ -216,6 +218,7 @@ export default async function InvoicesPage({
                     </Link>
                   </td>
                   <td className="p-3">{inv.customer.name}</td>
+                  <td className="p-3">{inv.customer.location || '-'}</td>
                   <td className="p-3">
                     {new Date(inv.invoiceDate).toLocaleDateString()}
                   </td>
@@ -253,7 +256,7 @@ export default async function InvoicesPage({
             {invoices.length === 0 && (
               <tr>
                 <td
-                  colSpan={7}
+                  colSpan={8}
                   className="p-8 text-center text-muted-foreground"
                 >
                   No invoices found

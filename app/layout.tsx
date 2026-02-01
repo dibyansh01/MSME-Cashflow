@@ -1,5 +1,6 @@
 import './globals.css'
 import { Providers } from './providers'
+import Navbar from '@/components/Navbar'
 
 /**
  * Root Layout for the application.
@@ -15,7 +16,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Providers>{children}</Providers>
+        <Providers>
+          <Navbar />
+          {children}
+        </Providers>
       </body>
     </html>
   )

@@ -95,7 +95,10 @@ export default async function FollowupsQueuePage({
     whereClause.AND.push({
       invoice: {
         customer: {
-          name: { contains: query, mode: 'insensitive' }
+          OR: [
+            { name: { contains: query, mode: 'insensitive' } },
+            { location: { contains: query, mode: 'insensitive' } }
+          ]
         }
       }
     })
@@ -132,8 +135,8 @@ export default async function FollowupsQueuePage({
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex flex-col gap-6 mb-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <h1 className="text-2xl font-bold">Collections Queue</h1>
-          <div className="flex flex-wrap items-end gap-3 w-full md:w-auto">
+          <h1 className="text-2xl font-bold whitespace-nowrap shrink-0">Collections Queue</h1>
+          <div className="flex flex-wrap items-end gap-3 w-full md:w-auto justify-start md:justify-end">
             <Search placeholder="Search customer..." />
             <Filter
               paramName="status"
@@ -156,6 +159,7 @@ export default async function FollowupsQueuePage({
           <thead className="bg-secondary/50 border-b">
             <tr>
               <th className="p-3 text-left font-medium text-muted-foreground">Customer</th>
+              <th className="p-3 text-left font-medium text-muted-foreground">Location</th>
               <th className="p-3 text-left font-medium text-muted-foreground">Invoice</th>
               <th className="p-3 text-left font-medium text-muted-foreground">Outstanding</th>
               <th className="p-3 text-left font-medium text-muted-foreground">Due Date</th>
@@ -178,8 +182,11 @@ export default async function FollowupsQueuePage({
 
               return (
                 <tr key={fu.id} className="hover:bg-muted/50 transition-colors">
-                  <td className="p-3 font-medium">
+                  <td className="p-3 font-medium whitespace-nowrap">
                     {inv.customer.name}
+                  </td>
+                  <td className="p-3">
+                    {inv.customer.location || '-'}
                   </td>
 
                   <td className="p-3">
@@ -223,27 +230,30 @@ export default async function FollowupsQueuePage({
                       ? new Date(displayDate).toLocaleDateString()
                       : '-'}
                   </td>
-
-                  <td className="p-3 space-x-2">
-                    <Link
-                      href={`/invoices/${inv.id}`}
-                      className="text-primary hover:underline text-xs font-medium"
-                    >
-                      View
-                    </Link>
-                    <Link
-                      href={`/invoices/${inv.id}/followup`}
-                      className="text-primary hover:underline text-xs font-medium"
-                    >
-                      Follow-up
-                    </Link>
-                    <Link
-                      href={`/invoices/${inv.id}/payment`}
-                      className="text-primary hover:underline text-xs font-medium"
-                    >
-                      Payment
-                    </Link>
-                  </td>
+{/* increase the size of the action column */}
+            
+          <td className="p-3 w-20"> {/* Adjust the width as needed */}
+          <div className="flex flex-col gap-2 items-start">
+            <Link
+            href={`/invoices/${inv.id}`}
+            className="text-primary hover:underline text-xs font-medium"
+            >
+            View
+            </Link>
+            <Link
+            href={`/invoices/${inv.id}/followup`}
+            className="text-primary hover:underline text-xs font-medium"
+            >
+            Follow-up
+            </Link>
+            <Link
+            href={`/invoices/${inv.id}/payment`}
+            className="text-primary hover:underline text-xs font-medium"
+            >
+            Payment
+            </Link>
+          </div>
+          </td>
                   <td className="p-3">
                     {(() => {
                       const daysOverdue = Math.floor(
@@ -278,7 +288,7 @@ export default async function FollowupsQueuePage({
 
             {followUps.length === 0 && (
               <tr>
-                <td colSpan={9} className="p-8 text-center text-muted-foreground">
+                <td colSpan={10} className="p-8 text-center text-muted-foreground">
                   🎉 No pending collections — you’re all clear!
                 </td>
               </tr>

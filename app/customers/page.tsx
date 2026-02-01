@@ -32,6 +32,7 @@ export default async function CustomersPage({
         { name: { contains: query, mode: 'insensitive' as const } },
         { email: { contains: query, mode: 'insensitive' as const } },
         { phone: { contains: query, mode: 'insensitive' as const } },
+        { location: { contains: query, mode: 'insensitive' as const } },
       ],
     }
     : {}
@@ -70,6 +71,7 @@ export default async function CustomersPage({
             <tr>
               <th className="text-left p-3 font-medium text-muted-foreground">Name</th>
               <th className="text-left p-3 font-medium text-muted-foreground">Phone</th>
+              <th className="text-left p-3 font-medium text-muted-foreground">Location</th>
               <th className="text-left p-3 font-medium text-muted-foreground">Email</th>
               <th className="text-left p-3 font-medium text-muted-foreground">Credit Terms</th>
               <th className="text-left p-3 font-medium text-muted-foreground">Created</th>
@@ -87,6 +89,7 @@ export default async function CustomersPage({
                   </Link>
                 </td>
                 <td className="p-3">{c.phone || '-'}</td>
+                <td className="p-3">{c.location || '-'}</td>
                 <td className="p-3">{c.email || '-'}</td>
                 <td className="p-3">
                   {c.creditTerms ? `${c.creditTerms} days` : '-'}

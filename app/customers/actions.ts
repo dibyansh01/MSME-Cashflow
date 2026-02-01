@@ -17,6 +17,7 @@ export async function createCustomer(prevState: CustomerFormState, formData: For
   const name = formData.get('name') as string
   const phone = formData.get('phone') as string
   const email = formData.get('email') as string
+  const location = formData.get('location') as string
   const creditTerms = formData.get('creditTerms') as string
 
   if (!name) {
@@ -29,6 +30,7 @@ export async function createCustomer(prevState: CustomerFormState, formData: For
         name,
         phone: phone || null,
         email: email || null,
+        location: location || null,
         creditTerms: creditTerms ? Number(creditTerms) : null,
       },
     })

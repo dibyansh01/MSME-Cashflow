@@ -71,6 +71,17 @@ export default function CustomerForm() {
 
             <div>
                 <label className="block text-sm font-medium mb-1">
+                    Location
+                </label>
+                <input
+                    name="location"
+                    className="border p-2 w-full rounded"
+                    placeholder="New York, London, etc."
+                />
+            </div>
+
+            <div>
+                <label className="block text-sm font-medium mb-1">
                     Credit Terms (days)
                 </label>
                 <input

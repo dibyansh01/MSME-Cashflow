@@ -42,6 +42,12 @@ const NAMES = [
     "George Harris", "Hannah Ian", "Ian Jenkins", "Karen Kelly"
 ];
 
+const CITIES = [
+    "New York", "London", "Mumbai", "Delhi", "Bangalore",
+    "Singapore", "Dubai", "Toronto", "Sydney", "Berlin",
+    "San Francisco", "Tokyo", "Paris", "Chicago", "Boston"
+];
+
 // --- Main Seeding Logic ---
 
 async function main() {
@@ -67,6 +73,7 @@ async function main() {
                 name: name,
                 email: `contact${i}@${name.replace(/\s+/g, '').toLowerCase()}.com`,
                 phone: `98765${getRandomInt(10000, 99999)}`,
+                location: getRandomElement(CITIES),
                 creditTerms: getRandomElement([15, 30, 45, 60]),
             }
         }));

@@ -109,7 +109,7 @@ export default async function DashboardPage() {
     .slice(0, 5)
 
   return (
-    <div className="p-6 md:p-10 space-y-8 max-w-7xl mx-auto animate-fade-in">
+    <div className="p-6 space-y-8 max-w-7xl mx-auto animate-fade-in">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-blue-700 to-blue-500 bg-clip-text text-transparent dark:from-blue-400 dark:to-blue-200">
@@ -122,7 +122,7 @@ export default async function DashboardPage() {
 
         <div className="flex items-center gap-3">
           <div className="flex gap-3 text-sm font-medium mr-2">
-            <Link href="/customers" className="px-4 py-2 rounded-lg bg-card border border-border hover:bg-secondary/50 transition-colors">
+            {/* <Link href="/customers" className="px-4 py-2 rounded-lg bg-card border border-border hover:bg-secondary/50 transition-colors">
               Customers
             </Link>
             <Link href="/invoices" className="px-4 py-2 rounded-lg bg-card border border-border hover:bg-secondary/50 transition-colors">
@@ -130,7 +130,7 @@ export default async function DashboardPage() {
             </Link>
             <Link href="/followups" className="px-4 py-2 rounded-lg bg-card border border-border hover:bg-secondary/50 transition-colors">
               Follow-ups
-            </Link>
+            </Link> */}
           </div>
           <ThemeToggle />
         </div>
