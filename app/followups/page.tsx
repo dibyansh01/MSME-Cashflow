@@ -10,6 +10,7 @@ import { Badge } from '@/app/components/ui/Badge'
 import { Search } from '@/app/components/ui/Search'
 import { Filter } from '@/app/components/ui/Filter'
 import { DateRangeFilter } from '@/app/components/ui/DateRangeFilter'
+import { ExportButton } from '@/app/components/ui/ExportButton'
 
 /**
  * Follow-ups Queue Page ("Collections").
@@ -150,6 +151,7 @@ export default async function FollowupsQueuePage({
             />
             <DateRangeFilter label="Next Follow-up" paramPrefix="nextFollowUp" />
             <DateRangeFilter label="Due Date" paramPrefix="dueDate" />
+            <ExportButton entity="collection" />
           </div>
         </div>
       </div>
@@ -230,30 +232,30 @@ export default async function FollowupsQueuePage({
                       ? new Date(displayDate).toLocaleDateString()
                       : '-'}
                   </td>
-{/* increase the size of the action column */}
-            
-          <td className="p-3 w-20"> {/* Adjust the width as needed */}
-          <div className="flex flex-col gap-2 items-start">
-            <Link
-            href={`/invoices/${inv.id}`}
-            className="text-primary hover:underline text-xs font-medium"
-            >
-            View
-            </Link>
-            <Link
-            href={`/invoices/${inv.id}/followup`}
-            className="text-primary hover:underline text-xs font-medium"
-            >
-            Follow-up
-            </Link>
-            <Link
-            href={`/invoices/${inv.id}/payment`}
-            className="text-primary hover:underline text-xs font-medium"
-            >
-            Payment
-            </Link>
-          </div>
-          </td>
+                  {/* increase the size of the action column */}
+
+                  <td className="p-3 w-20"> {/* Adjust the width as needed */}
+                    <div className="flex flex-col gap-2 items-start">
+                      <Link
+                        href={`/invoices/${inv.id}`}
+                        className="text-primary hover:underline text-xs font-medium"
+                      >
+                        View
+                      </Link>
+                      <Link
+                        href={`/invoices/${inv.id}/followup`}
+                        className="text-primary hover:underline text-xs font-medium"
+                      >
+                        Follow-up
+                      </Link>
+                      <Link
+                        href={`/invoices/${inv.id}/payment`}
+                        className="text-primary hover:underline text-xs font-medium"
+                      >
+                        Payment
+                      </Link>
+                    </div>
+                  </td>
                   <td className="p-3">
                     {(() => {
                       const daysOverdue = Math.floor(

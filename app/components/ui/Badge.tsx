@@ -2,7 +2,7 @@ import React from 'react';
 
 interface BadgeProps {
     children: React.ReactNode;
-    variant?: 'default' | 'success' | 'warning' | 'danger' | 'unpaid' | 'neutral';
+    variant?: 'default' | 'success' | 'warning' | 'danger' | 'unpaid' | 'neutral' | 'secondary';
     className?: string;
 }
 
@@ -23,6 +23,7 @@ export function Badge({ children, variant = 'default', className = '' }: BadgePr
         unpaid: 'bg-rose-100 text-rose-800 dark:bg-rose-900/60 dark:text-rose-100',
 
         neutral: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300',
+        secondary: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300',
     };
 
     return (

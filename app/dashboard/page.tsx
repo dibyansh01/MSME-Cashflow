@@ -63,6 +63,8 @@ export default async function DashboardPage() {
 
   let totalOutstanding = 0
   let totalOverdue = 0
+  let totalInvoiced = 0
+  let totalCollected = 0
 
   const agingBuckets = {
     '0-30': 0,
@@ -78,6 +80,8 @@ export default async function DashboardPage() {
 
   for (const inv of invoices) {
     totalOutstanding += inv.outstandingAmount
+    totalInvoiced += inv.invoiceAmount
+    totalCollected += inv.paidAmount
     const daysOverdue = getDaysOverdue(inv.dueDate)
 
     if (inv.outstandingAmount > 0 && daysOverdue > 0) {
@@ -137,7 +141,19 @@ export default async function DashboardPage() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard
+          title="Total Invoiced"
+          value={`₹${totalInvoiced.toLocaleString()}`}
+          subtext="Total business generated"
+        />
+        <StatCard
+          title="Payment Collected"
+          value={`₹${totalCollected.toLocaleString()}`}
+          color="success"
+          subtext="Total cash received"
+        />
         <StatCard
           title="Total Outstanding"
           value={`₹${totalOutstanding.toLocaleString()}`}
@@ -149,6 +165,9 @@ export default async function DashboardPage() {
           color="danger"
           subtext="Requires immediate attention"
         />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatCard
           title="Overdue Customers"
           value={topDefaulters.length}

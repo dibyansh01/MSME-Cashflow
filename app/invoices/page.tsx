@@ -8,6 +8,7 @@ import { Search } from '@/app/components/ui/Search'
 import { getNextNDays, getDateRangeFromPreset } from '@/lib/utils/date'
 // ... (other imports)
 import { Filter } from '@/app/components/ui/Filter'
+import { ExportButton } from '@/app/components/ui/ExportButton'
 
 /**
  * Invoices List Page.
@@ -165,6 +166,7 @@ export default async function InvoicesPage({
               { label: 'Last 30 Days', value: 'last_30_days' },
             ]}
           />
+          <ExportButton entity="invoices" />
           <Link
             href="/invoices/new"
             className="flex-shrink-0 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium"
