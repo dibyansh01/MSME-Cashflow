@@ -9,6 +9,8 @@ import { getNextNDays, getDateRangeFromPreset } from '@/lib/utils/date'
 // ... (other imports)
 import { Filter } from '@/app/components/ui/Filter'
 import { ExportButton } from '@/app/components/ui/ExportButton'
+import { FilterPopover } from '@/app/components/ui/FilterPopover'
+import { ActiveFilters } from '@/app/components/ui/ActiveFilters'
 
 /**
  * Invoices List Page.
@@ -137,35 +139,40 @@ export default async function InvoicesPage({
         <h1 className="text-2xl font-bold">Invoices</h1>
         <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
           <Search placeholder="Search invoice # or customer..." />
-          <Filter
-            paramName="status"
-            label="Status"
-            options={[
-              { label: 'Paid', value: 'PAID' },
-              { label: 'Unpaid', value: 'UNPAID' },
-              { label: 'Partial', value: 'PARTIAL' },
-              { label: 'Overdue', value: 'OVERDUE' },
-            ]}
-          />
-          <Filter
-            paramName="invoiceDateRange"
-            label="Inv Date"
-            options={[
-              { label: 'This Month', value: 'this_month' },
-              { label: 'Last Month', value: 'last_month' },
-              { label: 'This Year', value: 'this_year' },
-            ]}
-          />
-          <Filter
-            paramName="dueDateRange"
-            label="Due Date"
-            options={[
-              { label: 'This Month', value: 'this_month' },
-              { label: 'Next Month', value: 'next_month' },
-              { label: 'This Week', value: 'this_week' },
-              { label: 'Last 30 Days', value: 'last_30_days' },
-            ]}
-          />
+          <FilterPopover filterKeys={['status', 'invoiceDateRange', 'dueDateRange']}>
+            <Filter
+              paramName="status"
+              label="Status"
+              options={[
+                { label: 'Paid', value: 'PAID' },
+                { label: 'Unpaid', value: 'UNPAID' },
+                { label: 'Partial', value: 'PARTIAL' },
+                { label: 'Overdue', value: 'OVERDUE' },
+              ]}
+              className="w-full"
+            />
+            <Filter
+              paramName="invoiceDateRange"
+              label="Inv Date"
+              options={[
+                { label: 'This Month', value: 'this_month' },
+                { label: 'Last Month', value: 'last_month' },
+                { label: 'This Year', value: 'this_year' },
+              ]}
+              className="w-full"
+            />
+            <Filter
+              paramName="dueDateRange"
+              label="Due Date"
+              options={[
+                { label: 'This Month', value: 'this_month' },
+                { label: 'Next Month', value: 'next_month' },
+                { label: 'This Week', value: 'this_week' },
+                { label: 'Last 30 Days', value: 'last_30_days' },
+              ]}
+              className="w-full"
+            />
+          </FilterPopover>
           <ExportButton entity="invoices" />
           <Link
             href="/invoices/new"
@@ -174,6 +181,16 @@ export default async function InvoicesPage({
             + New
           </Link>
         </div>
+      </div>
+
+      <div className="mb-4">
+        <ActiveFilters
+          filters={[
+            { key: 'status', label: 'Status' },
+            { key: 'invoiceDateRange', label: 'Invoice Date' },
+            { key: 'dueDateRange', label: 'Due Date' },
+          ]}
+        />
       </div>
 
       <div className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden">
