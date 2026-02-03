@@ -63,6 +63,8 @@ export default async function DashboardPage() {
 
   let totalOutstanding = 0
   let totalOverdue = 0
+  let totalInvoiced = 0
+  let totalCollected = 0
 
   const agingBuckets = {
     '0-30': 0,
@@ -78,6 +80,8 @@ export default async function DashboardPage() {
 
   for (const inv of invoices) {
     totalOutstanding += inv.outstandingAmount
+    totalInvoiced += inv.invoiceAmount
+    totalCollected += inv.paidAmount
     const daysOverdue = getDaysOverdue(inv.dueDate)
 
     if (inv.outstandingAmount > 0 && daysOverdue > 0) {
@@ -109,7 +113,7 @@ export default async function DashboardPage() {
     .slice(0, 5)
 
   return (
-    <div className="p-6 md:p-10 space-y-8 max-w-7xl mx-auto animate-fade-in">
+    <div className="p-6 space-y-8 max-w-7xl mx-auto animate-fade-in">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-blue-700 to-blue-500 bg-clip-text text-transparent dark:from-blue-400 dark:to-blue-200">
@@ -122,7 +126,7 @@ export default async function DashboardPage() {
 
         <div className="flex items-center gap-3">
           <div className="flex gap-3 text-sm font-medium mr-2">
-            <Link href="/customers" className="px-4 py-2 rounded-lg bg-card border border-border hover:bg-secondary/50 transition-colors">
+            {/* <Link href="/customers" className="px-4 py-2 rounded-lg bg-card border border-border hover:bg-secondary/50 transition-colors">
               Customers
             </Link>
             <Link href="/invoices" className="px-4 py-2 rounded-lg bg-card border border-border hover:bg-secondary/50 transition-colors">
@@ -130,14 +134,26 @@ export default async function DashboardPage() {
             </Link>
             <Link href="/followups" className="px-4 py-2 rounded-lg bg-card border border-border hover:bg-secondary/50 transition-colors">
               Follow-ups
-            </Link>
+            </Link> */}
           </div>
           <ThemeToggle />
         </div>
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard
+          title="Total Invoiced"
+          value={`₹${totalInvoiced.toLocaleString()}`}
+          subtext="Total business generated"
+        />
+        <StatCard
+          title="Payment Collected"
+          value={`₹${totalCollected.toLocaleString()}`}
+          color="success"
+          subtext="Total cash received"
+        />
         <StatCard
           title="Total Outstanding"
           value={`₹${totalOutstanding.toLocaleString()}`}
@@ -149,6 +165,9 @@ export default async function DashboardPage() {
           color="danger"
           subtext="Requires immediate attention"
         />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatCard
           title="Overdue Customers"
           value={topDefaulters.length}

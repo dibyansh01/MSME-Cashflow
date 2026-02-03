@@ -4,6 +4,9 @@ import { prisma } from '@/lib/db/prisma'
 import Link from 'next/link'
 import { Pagination } from '@/app/components/ui/Pagination'
 import { Search } from '@/app/components/ui/Search'
+import { Badge } from '@/app/components/ui/Badge'
+import { ExportButton } from '@/app/components/ui/ExportButton'
+import { getNextNDays } from '@/lib/utils/date'
 
 /**
  * Customers List Page.
@@ -32,6 +35,7 @@ export default async function CustomersPage({
         { name: { contains: query, mode: 'insensitive' as const } },
         { email: { contains: query, mode: 'insensitive' as const } },
         { phone: { contains: query, mode: 'insensitive' as const } },
+        { location: { contains: query, mode: 'insensitive' as const } },
       ],
     }
     : {}
@@ -40,6 +44,15 @@ export default async function CustomersPage({
   const [customers, totalCount] = await Promise.all([
     prisma.customer.findMany({
       where: whereClause,
+      include: {
+        invoices: {
+          select: {
+            dueDate: true,
+            outstandingAmount: true,
+            status: true,
+          }
+        }
+      },
       orderBy: { createdAt: 'desc' },
       skip: (currentPage - 1) * pageSize,
       take: pageSize,
@@ -55,6 +68,7 @@ export default async function CustomersPage({
         <h1 className="text-2xl font-bold">Customers</h1>
         <div className="flex items-center gap-2 w-full md:w-auto">
           <Search placeholder="Search customers..." />
+          <ExportButton entity="customers" />
           <Link
             href="/customers/new"
             className="flex-shrink-0 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium"
@@ -69,7 +83,9 @@ export default async function CustomersPage({
           <thead className="bg-secondary/50 border-b">
             <tr>
               <th className="text-left p-3 font-medium text-muted-foreground">Name</th>
+              <th className="text-left p-3 font-medium text-muted-foreground">Payment Status</th>
               <th className="text-left p-3 font-medium text-muted-foreground">Phone</th>
+              <th className="text-left p-3 font-medium text-muted-foreground">Location</th>
               <th className="text-left p-3 font-medium text-muted-foreground">Email</th>
               <th className="text-left p-3 font-medium text-muted-foreground">Credit Terms</th>
               <th className="text-left p-3 font-medium text-muted-foreground">Created</th>
@@ -78,8 +94,45 @@ export default async function CustomersPage({
           <tbody className="divide-y divide-border">
             {customers.map((c) => (
               <tr key={c.id} className="hover:bg-muted/50 transition-colors">
-                <td className="p-3 font-medium">{c.name}</td>
+                <td className="p-3 font-medium">
+                  <Link
+                    href={`/invoices?q=${encodeURIComponent(c.name)}`}
+                    className="text-primary hover:underline"
+                  >
+                    {c.name}
+                  </Link>
+                </td>
+                <td className="p-3">
+                  {(() => {
+                    const invoices = c.invoices || []
+                    const hasInvoices = invoices.length > 0
+
+                    if (!hasInvoices) {
+                      return <Badge variant="secondary">New</Badge>
+                    }
+
+                    const today = new Date()
+                    today.setHours(0, 0, 0, 0)
+
+                    const hasOverdue = invoices.some(
+                      (inv) => inv.outstandingAmount > 0 && new Date(inv.dueDate) < today
+                    )
+
+                    if (hasOverdue) {
+                      return <Badge variant="danger">Overdue</Badge>
+                    }
+
+                    const totalOutstanding = invoices.reduce((sum, inv) => sum + inv.outstandingAmount, 0)
+
+                    if (totalOutstanding > 0) {
+                      return <Badge variant="warning">Pending</Badge>
+                    }
+
+                    return <Badge variant="success">Paid</Badge>
+                  })()}
+                </td>
                 <td className="p-3">{c.phone || '-'}</td>
+                <td className="p-3">{c.location || '-'}</td>
                 <td className="p-3">{c.email || '-'}</td>
                 <td className="p-3">
                   {c.creditTerms ? `${c.creditTerms} days` : '-'}
@@ -91,7 +144,7 @@ export default async function CustomersPage({
             ))}
             {customers.length === 0 && (
               <tr>
-                <td className="p-8 text-center text-muted-foreground" colSpan={5}>
+                <td className="p-8 text-center text-muted-foreground" colSpan={7}>
                   No customers found
                 </td>
               </tr>
