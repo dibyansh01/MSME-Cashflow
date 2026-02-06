@@ -4,10 +4,11 @@ import { addSupplierPayment } from '../actions';
 export default async function SupplierInvoiceDetail({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
   const invoice = await prisma.supplierInvoice.findUnique({
-    where: { id: params.id },
+    where: { id: id },
     include: {
       vendor: true,
       payments: { orderBy: { paymentDate: 'desc' } },

@@ -274,6 +274,173 @@ export async function GET(req: NextRequest) {
                 { header: 'Next F/U', key: 'nextFollowUp', width: 15 },
                 { header: 'Notes', key: 'notes', width: 30 },
             ]
+        } else if (entity === 'vendors') {
+            title = 'Vendors Report'
+            const whereClause: any = q ? {
+                OR: [
+                    { name: { contains: q, mode: 'insensitive' } },
+                    { email: { contains: q, mode: 'insensitive' } },
+                    { phone: { contains: q, mode: 'insensitive' } },
+                ],
+            } : {}
+
+            data = await prisma.vendor.findMany({
+                where: whereClause,
+                include: {
+                    supplierInvoices: {
+                        select: {
+                            dueDate: true,
+                            outstandingAmount: true,
+                            status: true,
+                        }
+                    }
+                },
+                orderBy: { createdAt: 'desc' },
+                take: MAX_ROWS,
+            })
+
+            data = data.map(v => {
+                const invoices = v.supplierInvoices || []
+                const today = new Date()
+                today.setHours(0, 0, 0, 0)
+                let status = 'New'
+                if (invoices.length > 0) {
+                    const hasOverdue = invoices.some((inv: any) => inv.outstandingAmount > 0 && new Date(inv.dueDate) < today)
+                    const totalOutstanding = invoices.reduce((sum: number, inv: any) => sum + inv.outstandingAmount, 0)
+                    if (hasOverdue) status = 'Overdue'
+                    else if (totalOutstanding > 0) status = 'Pending'
+                    else status = 'Paid'
+                }
+                return {
+                    name: v.name,
+                    status,
+                    phone: v.phone || '-',
+                    email: v.email || '-',
+                    creditTerms: v.creditTerms ? `${v.creditTerms} days` : '-',
+                    createdAt: new Date(v.createdAt).toLocaleDateString()
+                }
+            })
+
+            columns = [
+                { header: 'Name', key: 'name', width: 25 },
+                { header: 'Status', key: 'status', width: 15 },
+                { header: 'Phone', key: 'phone', width: 15 },
+                { header: 'Email', key: 'email', width: 25 },
+                { header: 'Credit Terms', key: 'creditTerms', width: 15 },
+                { header: 'Created', key: 'createdAt', width: 15 },
+            ]
+
+        } else if (entity === 'expenses') {
+            title = 'Expenses Report'
+            const expenseDateRange = searchParams.get('expenseDateRange') || ''
+            const paymentMode = searchParams.get('paymentMode') || ''
+            const whereClause: any = { AND: [] }
+
+            if (q) {
+                whereClause.AND.push({
+                    OR: [
+                        { category: { name: { contains: q, mode: 'insensitive' } } },
+                        { vendor: { name: { contains: q, mode: 'insensitive' } } },
+                        { notes: { contains: q, mode: 'insensitive' } },
+                    ]
+                })
+            }
+            if (expenseDateRange) {
+                const range = getDateRangeFromPreset(expenseDateRange)
+                if (range) whereClause.AND.push({ expenseDate: { gte: range.startDate, lte: range.endDate } })
+            }
+            if (paymentMode) whereClause.AND.push({ paymentMode })
+
+            data = await prisma.expense.findMany({
+                where: whereClause,
+                include: { category: true, vendor: true },
+                orderBy: { expenseDate: 'desc' },
+                take: MAX_ROWS,
+            })
+
+            data = data.map(e => ({
+                date: new Date(e.expenseDate).toLocaleDateString(),
+                category: e.category.name,
+                vendor: e.vendor?.name || '-',
+                amount: e.amount,
+                mode: e.paymentMode,
+                notes: e.notes || '-'
+            }))
+
+            columns = [
+                { header: 'Date', key: 'date', width: 15 },
+                { header: 'Category', key: 'category', width: 20 },
+                { header: 'Vendor', key: 'vendor', width: 20 },
+                { header: 'Amount', key: 'amount', width: 15 },
+                { header: 'Mode', key: 'mode', width: 15 },
+                { header: 'Notes', key: 'notes', width: 30 },
+            ]
+
+        } else if (entity === 'supplier-invoices') {
+            title = 'Supplier Invoices Report'
+            const status = searchParams.get('status') || ''
+            const dueDateRange = searchParams.get('dueDateRange') || ''
+            const whereClause: any = { AND: [] }
+
+            if (q) {
+                whereClause.AND.push({
+                    OR: [
+                        { invoiceNo: { contains: q, mode: 'insensitive' } },
+                        { vendor: { name: { contains: q, mode: 'insensitive' } } },
+                    ]
+                })
+            }
+
+            const today = new Date()
+            today.setHours(0, 0, 0, 0)
+
+            if (status) {
+                const statusUpper = status.toUpperCase()
+                if (statusUpper === 'PAID') whereClause.AND.push({ outstandingAmount: 0 })
+                else if (statusUpper === 'OVERDUE') whereClause.AND.push({ outstandingAmount: { gt: 0 }, dueDate: { lt: today } })
+                else if (statusUpper === 'PARTIAL') whereClause.AND.push({ outstandingAmount: { gt: 0 }, paidAmount: { gt: 0 }, dueDate: { gte: today } })
+                else if (statusUpper === 'UNPAID') whereClause.AND.push({ outstandingAmount: { gt: 0 }, paidAmount: 0, dueDate: { gte: today } })
+            }
+
+            if (dueDateRange) {
+                const range = getDateRangeFromPreset(dueDateRange)
+                if (range) whereClause.AND.push({ dueDate: { gte: range.startDate, lte: range.endDate } })
+            }
+
+            data = await prisma.supplierInvoice.findMany({
+                where: whereClause,
+                include: { vendor: true },
+                orderBy: { dueDate: 'asc' },
+                take: MAX_ROWS,
+            })
+
+            data = data.map(inv => {
+                const isOverdue = inv.outstandingAmount > 0 && new Date(inv.dueDate) < today
+                let displayStatus = 'UNPAID'
+                if (inv.outstandingAmount === 0) displayStatus = 'PAID'
+                else if (isOverdue) displayStatus = 'OVERDUE'
+                else if (inv.paidAmount > 0) displayStatus = 'PARTIAL'
+
+                return {
+                    invoiceNo: inv.invoiceNo,
+                    vendor: inv.vendor.name,
+                    invoiceDate: new Date(inv.invoiceDate).toLocaleDateString(),
+                    dueDate: new Date(inv.dueDate).toLocaleDateString(),
+                    amount: inv.invoiceAmount,
+                    outstanding: inv.outstandingAmount,
+                    status: displayStatus
+                }
+            })
+
+            columns = [
+                { header: 'Invoice #', key: 'invoiceNo', width: 15 },
+                { header: 'Vendor', key: 'vendor', width: 25 },
+                { header: 'Inv Date', key: 'invoiceDate', width: 15 },
+                { header: 'Due Date', key: 'dueDate', width: 15 },
+                { header: 'Amount', key: 'amount', width: 15 },
+                { header: 'Outstanding', key: 'outstanding', width: 15 },
+                { header: 'Status', key: 'status', width: 15 },
+            ]
         }
 
         // --- GENERATION LOGIC ---

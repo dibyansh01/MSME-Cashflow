@@ -4,7 +4,7 @@ import { useSearchParams } from 'next/navigation'
 import { useState } from 'react'
 
 interface ExportButtonProps {
-    entity: 'customers' | 'invoices' | 'collection'
+    entity: 'customers' | 'invoices' | 'collection' | 'vendors' | 'expenses' | 'supplier-invoices'
 }
 
 export function ExportButton({ entity }: ExportButtonProps) {
