@@ -6,16 +6,24 @@ import { Pagination } from '@/app/components/ui/Pagination'
 import { Search } from '@/app/components/ui/Search'
 import { Badge } from '@/app/components/ui/Badge'
 import { ExportButton } from '@/app/components/ui/ExportButton'
+import { FilterPopover } from '@/app/components/ui/FilterPopover'
+import { Filter } from '@/app/components/ui/Filter'
+import { ActiveFilters } from '@/app/components/ui/ActiveFilters'
 
 /**
  * Vendors List Page.
  * Displays a list of all vendors with contact details and status.
- * Supports server-side pagination and search.
+ * Supports server-side pagination, search, and filtering.
  */
 export default async function VendorsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; q?: string }>
+  searchParams: Promise<{
+    page?: string;
+    q?: string;
+    creditTerms?: string;
+    status?: string;
+  }>
 }) {
   const session = await getServerSession()
 
@@ -23,23 +31,74 @@ export default async function VendorsPage({
     redirect('/login')
   }
 
-  const { page, q } = await searchParams
+  const { page, q, creditTerms, status } = await searchParams
   const currentPage = Number(page || '1')
   const pageSize = 10
   const query = q || ''
 
-  const whereClause: any = query
-    ? {
+  // Build Where Clause
+  const whereClause: any = {
+    AND: []
+  }
+
+  if (query) {
+    whereClause.AND.push({
       OR: [
         { name: { contains: query, mode: 'insensitive' } },
         { email: { contains: query, mode: 'insensitive' } },
         { phone: { contains: query, mode: 'insensitive' } },
       ],
-    }
-    : {}
+    })
+  }
 
-  // Parallel fetch: data + count
-  const [vendors, totalCount] = await Promise.all([
+  if (creditTerms) {
+    whereClause.AND.push({
+      creditTerms: Number(creditTerms)
+    })
+  }
+
+  // Status Filter Logic
+  if (status) {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    if (status === 'OVERDUE') {
+      whereClause.AND.push({
+        supplierInvoices: {
+          some: {
+            outstandingAmount: { gt: 0 },
+            dueDate: { lt: today }
+          }
+        }
+      })
+    } else if (status === 'PENDING') {
+      whereClause.AND.push({
+        supplierInvoices: {
+          some: {
+            outstandingAmount: { gt: 0 }
+          }
+        }
+      })
+    } else if (status === 'PAID') {
+      whereClause.AND.push({
+        supplierInvoices: {
+          some: {},
+          every: {
+            outstandingAmount: 0
+          }
+        }
+      })
+    } else if (status === 'NEW') {
+      whereClause.AND.push({
+        supplierInvoices: {
+          none: {}
+        }
+      })
+    }
+  }
+
+  // Parallel fetch: data + count + options
+  const [vendors, totalCount, creditTermsData] = await Promise.all([
     prisma.vendor.findMany({
       where: whereClause,
       include: {
@@ -56,16 +115,50 @@ export default async function VendorsPage({
       take: pageSize,
     }),
     prisma.vendor.count({ where: whereClause }),
+    prisma.vendor.findMany({
+      select: { creditTerms: true },
+      where: { creditTerms: { not: null } },
+      distinct: ['creditTerms'],
+      orderBy: { creditTerms: 'asc' }
+    })
   ])
 
   const totalPages = Math.ceil(totalCount / pageSize)
+
+  const creditTermsOptions = creditTermsData
+    .map(v => v.creditTerms)
+    .filter((ct): ct is number => ct !== null)
+    .map(ct => ({ label: `${ct} Days`, value: ct.toString() }))
+
+  const statusOptions = [
+    { label: 'Overdue', value: 'OVERDUE' },
+    { label: 'Pending', value: 'PENDING' },
+    { label: 'Paid', value: 'PAID' },
+    { label: 'New', value: 'NEW' },
+  ]
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <h1 className="text-2xl font-bold">Vendors</h1>
-        <div className="flex items-center gap-2 w-full md:w-auto">
+        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
           <Search placeholder="Search vendors..." />
+
+          <FilterPopover filterKeys={['status', 'creditTerms']}>
+            <Filter
+              paramName="status"
+              label="Status"
+              options={statusOptions}
+            />
+            {creditTermsOptions.length > 0 && (
+              <Filter
+                paramName="creditTerms"
+                label="Credit Terms"
+                options={creditTermsOptions}
+              />
+            )}
+          </FilterPopover>
+
           <ExportButton entity="vendors" />
           <Link
             href="/vendors/new"
@@ -74,6 +167,15 @@ export default async function VendorsPage({
             + New
           </Link>
         </div>
+      </div>
+
+      <div className="mb-4">
+        <ActiveFilters
+          filters={[
+            { key: 'status', label: 'Status' },
+            { key: 'creditTerms', label: 'Credit Terms' }
+          ]}
+        />
       </div>
 
       <div className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden">
