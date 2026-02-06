@@ -1,68 +1,109 @@
-import {prisma} from '@/lib/db/prisma';
-import { addSupplierPayment } from '../actions';
+import { prisma } from '@/lib/db/prisma'
+import Link from 'next/link'
 
 export default async function SupplierInvoiceDetail({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ id: string }>
 }) {
-  const { id } = await params;
+  const { id } = await params
   const invoice = await prisma.supplierInvoice.findUnique({
     where: { id: id },
     include: {
       vendor: true,
       payments: { orderBy: { paymentDate: 'desc' } },
     },
-  });
+  })
 
-  if (!invoice) return <div>Invoice not found</div>;
+  if (!invoice) return <div className="p-6">Invoice not found</div>
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-xl font-semibold">
-        Supplier Invoice {invoice.invoiceNo}
-      </h1>
-
-      <div className="card">
-        <p><b>Vendor:</b> {invoice.vendor.name}</p>
-        <p><b>Invoice Amount:</b> ₹{invoice.invoiceAmount}</p>
-        <p><b>Outstanding:</b> ₹{invoice.outstandingAmount}</p>
-        <p><b>Status:</b> {invoice.status}</p>
+    <div className="p-6 space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold">
+          Supplier Invoice {invoice.invoiceNo}
+        </h1>
+        <p className="text-gray-600">
+          {invoice.vendor.name}
+        </p>
       </div>
 
-      {invoice.outstandingAmount > 0 && (
-        <form
-          action={addSupplierPayment.bind(null, invoice.id)}
-          className="max-w-md space-y-3"
+      {/* Invoice Summary */}
+      <div className="grid grid-cols-2 gap-4 border rounded p-4">
+        <div>
+          <div className="text-sm text-gray-500">
+            Invoice Amount
+          </div>
+          <div className="font-bold">
+            ₹{invoice.invoiceAmount.toLocaleString()}
+          </div>
+        </div>
+
+        <div>
+          <div className="text-sm text-gray-500">
+            Outstanding
+          </div>
+          <div className="font-bold text-red-600">
+            ₹{invoice.outstandingAmount.toLocaleString()}
+          </div>
+        </div>
+
+        <div>
+          <div className="text-sm text-gray-500">
+            Due Date
+          </div>
+          <div>
+            {new Date(invoice.dueDate).toLocaleDateString()}
+          </div>
+        </div>
+
+        <div>
+          <div className="text-sm text-gray-500">
+            Status
+          </div>
+          <div>{invoice.status}</div>
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div className="flex gap-4">
+        <Link
+          href={`/supplier-invoices/${invoice.id}/payment`}
+          className="px-4 py-2 border rounded hover:bg-gray-50 bg-black text-white"
         >
-          <h2 className="font-semibold">Add Payment</h2>
+          + Add Payment
+        </Link>
+      </div>
 
-          <input type="date" name="paymentDate" required />
-          <input name="amount" type="number" placeholder="Amount" required />
+      {/* Payment History */}
+      <div className="border rounded p-4">
+        <h2 className="font-bold mb-3">Payment History</h2>
 
-          <select name="method">
-            <option value="BANK">Bank</option>
-            <option value="UPI">UPI</option>
-            <option value="CASH">Cash</option>
-          </select>
+        {invoice.payments.length === 0 && (
+          <div className="text-gray-500">
+            No payments yet
+          </div>
+        )}
 
-          <input name="reference" placeholder="Reference" />
-          <textarea name="notes" placeholder="Notes" />
-
-          <button className="btn-primary">Save Payment</button>
-        </form>
-      )}
-
-      <div>
-        <h2 className="font-semibold mb-2">Payment History</h2>
-        <ul className="space-y-1">
-          {invoice.payments.map(p => (
-            <li key={p.id}>
-              {p.paymentDate.toDateString()} – ₹{p.amount} ({p.method})
+        <ul className="space-y-2">
+          {invoice.payments.map((p) => (
+            <li key={p.id} className="border-b pb-2">
+              <div className="text-sm font-medium">
+                ₹{p.amount.toLocaleString()} — {p.method}
+              </div>
+              <div className="text-xs text-gray-600">
+                {new Date(p.paymentDate).toLocaleDateString()}
+                {p.reference && ` | Ref: ${p.reference}`}
+              </div>
+              {p.notes && (
+                <div className="text-xs text-gray-500">
+                  {p.notes}
+                </div>
+              )}
             </li>
           ))}
         </ul>
       </div>
     </div>
-  );
+  )
 }

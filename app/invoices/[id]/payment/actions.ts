@@ -85,5 +85,5 @@ export async function addPayment(
   revalidatePath('/invoices')
   revalidatePath('/dashboard')
 
-  redirect(`/invoices/${invoiceId}`)
+  return { success: true, message: 'Payment recorded successfully!' }
 }
