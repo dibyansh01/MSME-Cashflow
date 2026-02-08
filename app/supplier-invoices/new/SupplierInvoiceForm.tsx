@@ -1,17 +1,17 @@
 'use client'
 
 import { useFormState } from 'react-dom'
-import { createCustomer, type CustomerFormState } from '../actions'
+import { createSupplierInvoice, type SupplierInvoiceFormState } from '../actions'
 import Link from 'next/link'
 import { useEffect, useRef } from 'react'
 
-export default function CustomerForm() {
-    const initialState: CustomerFormState = {
+export default function SupplierInvoiceForm({ vendors }: { vendors: { id: string; name: string }[] }) {
+    const initialState: SupplierInvoiceFormState = {
         error: undefined,
         success: false,
     }
 
-    const [state, formAction] = useFormState(createCustomer, initialState)
+    const [state, formAction] = useFormState(createSupplierInvoice, initialState)
     const formRef = useRef<HTMLFormElement>(null)
 
     useEffect(() => {
@@ -30,78 +30,78 @@ export default function CustomerForm() {
 
             {state.success && (
                 <div className="bg-green-50 border border-green-300 p-2 text-sm text-green-800 rounded">
-                    ✅ Customer saved successfully
+                    ✅ Supplier Invoice saved successfully
                 </div>
             )}
 
             <div>
                 <label className="block text-sm font-medium mb-1">
-                    Customer Name *
+                    Vendor *
                 </label>
-                <input
-                    name="name"
+                <select
+                    name="vendorId"
                     required
                     className="border p-2 w-full rounded"
-                    placeholder="ABC Pharma Distributors"
-                />
+                >
+                    <option value="">Select Vendor</option>
+                    {vendors.map((v) => (
+                        <option key={v.id} value={v.id}>
+                            {v.name}
+                        </option>
+                    ))}
+                </select>
             </div>
 
             <div>
                 <label className="block text-sm font-medium mb-1">
-                    Phone
+                    Invoice Number *
                 </label>
                 <input
-                    name="phone"
+                    name="invoiceNo"
+                    required
                     className="border p-2 w-full rounded"
-                    placeholder="9876543210"
+                    placeholder="INV-1001"
                 />
             </div>
 
             <div>
                 <label className="block text-sm font-medium mb-1">
-                    Email
+                    Invoice Date *
                 </label>
                 <input
-                    name="email"
-                    type="email"
+                    name="invoiceDate"
+                    type="date"
+                    required
                     className="border p-2 w-full rounded"
-                    placeholder="accounts@abcpharma.com"
                 />
             </div>
 
             <div>
                 <label className="block text-sm font-medium mb-1">
-                    Location
+                    Invoice Amount *
                 </label>
                 <input
-                    name="location"
-                    className="border p-2 w-full rounded"
-                    placeholder="New York, London, etc."
-                />
-            </div>
-
-            <div>
-                <label className="block text-sm font-medium mb-1">
-                    Credit Terms (days)
-                </label>
-                <input
-                    name="creditTerms"
+                    name="invoiceAmount"
                     type="number"
+                    step="0.01"
+                    required
                     className="border p-2 w-full rounded"
-                    placeholder="30"
+                    placeholder="50000"
                 />
-                
             </div>
 
             <div>
                 <label className="block text-sm font-medium mb-1">
-                    Notes
+                    Paid Amount *
                 </label>
-                <textarea
-                    name="notes"
-                    rows={3}
+                <input
+                    name="paidAmount"
+                    type="number"
+                    step="0.01"
+                    required
                     className="border p-2 w-full rounded"
-                    placeholder="Additional details..."
+                    placeholder="0"
+                    defaultValue="0"
                 />
             </div>
 
@@ -110,11 +110,11 @@ export default function CustomerForm() {
                     type="submit"
                     className="bg-black text-white px-4 py-2 rounded"
                 >
-                    Save Customer
+                    Save Supplier Invoice
                 </button>
 
                 <Link
-                    href="/customers"
+                    href="/supplier-invoices"
                     className="px-4 py-2 border rounded"
                 >
                     Back to List

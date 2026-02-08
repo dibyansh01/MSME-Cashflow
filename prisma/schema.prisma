@@ -23,7 +23,9 @@ model Customer {
   phone       String?
   email       String?
   location    String?  // City or Region
+
   creditTerms Int?     // Number of days for credit
+  notes       String?  // Additional notes
   createdAt   DateTime @default(now())
 
   invoices    Invoice[]
