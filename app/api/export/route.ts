@@ -287,7 +287,7 @@ export async function GET(req: NextRequest) {
             data = await prisma.vendor.findMany({
                 where: whereClause,
                 include: {
-                    supplierInvoices: {
+                    invoices: {
                         select: {
                             dueDate: true,
                             outstandingAmount: true,
@@ -300,7 +300,7 @@ export async function GET(req: NextRequest) {
             })
 
             data = data.map(v => {
-                const invoices = v.supplierInvoices || []
+                const invoices = v.invoices || []
                 const today = new Date()
                 today.setHours(0, 0, 0, 0)
                 let status = 'New'
@@ -376,8 +376,8 @@ export async function GET(req: NextRequest) {
                 { header: 'Notes', key: 'notes', width: 30 },
             ]
 
-        } else if (entity === 'supplier-invoices') {
-            title = 'Supplier Invoices Report'
+        } else if (entity === 'vendor-invoices' || entity === 'supplier-invoices') {
+            title = 'Vendor Invoices Report'
             const status = searchParams.get('status') || ''
             const dueDateRange = searchParams.get('dueDateRange') || ''
             const whereClause: any = { AND: [] }
@@ -407,7 +407,7 @@ export async function GET(req: NextRequest) {
                 if (range) whereClause.AND.push({ dueDate: { gte: range.startDate, lte: range.endDate } })
             }
 
-            data = await prisma.supplierInvoice.findMany({
+            data = await prisma.vendorInvoice.findMany({
                 where: whereClause,
                 include: { vendor: true },
                 orderBy: { dueDate: 'asc' },

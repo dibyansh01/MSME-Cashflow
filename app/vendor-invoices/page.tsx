@@ -30,7 +30,7 @@ import { Filter } from '@/app/components/ui/Filter'
 import { FilterPopover } from '@/app/components/ui/FilterPopover'
 import { ActiveFilters } from '@/app/components/ui/ActiveFilters'
 
-export default async function SupplierInvoicesPage({
+export default async function VendorInvoicesPage({
   searchParams,
 }: {
   searchParams: Promise<{
@@ -121,14 +121,14 @@ export default async function SupplierInvoicesPage({
   }
 
   const [invoices, totalCount] = await Promise.all([
-    prisma.supplierInvoice.findMany({
+    prisma.vendorInvoice.findMany({
       where: whereClause,
       include: { vendor: true },
       orderBy: { dueDate: 'asc' },
       skip: (currentPage - 1) * pageSize,
       take: pageSize,
     }),
-    prisma.supplierInvoice.count({ where: whereClause }),
+    prisma.vendorInvoice.count({ where: whereClause }),
   ])
 
   const totalPages = Math.ceil(totalCount / pageSize)
@@ -136,7 +136,7 @@ export default async function SupplierInvoicesPage({
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-        <h1 className="text-2xl font-bold">Supplier Invoices</h1>
+        <h1 className="text-2xl font-bold">Vendor Invoices</h1>
         <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
           <Search placeholder="Search invoice # or vendor..." />
           <FilterPopover filterKeys={['status', 'dueDateRange']}>
@@ -163,7 +163,7 @@ export default async function SupplierInvoicesPage({
             />
           </FilterPopover>
           <Link
-            href="/supplier-invoices/new"
+            href="/vendor-invoices/new"
             className="flex-shrink-0 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium"
           >
             + New
@@ -215,7 +215,7 @@ export default async function SupplierInvoicesPage({
                 <tr key={inv.id} className="hover:bg-muted/50 transition-colors">
                   <td className="p-3">
                     <Link
-                      href={`/supplier-invoices/${inv.id}`}
+                      href={`/vendor-invoices/${inv.id}`}
                       className="text-primary hover:underline font-medium"
                     >
                       {inv.invoiceNo}
@@ -254,7 +254,7 @@ export default async function SupplierInvoicesPage({
             {invoices.length === 0 && (
               <tr>
                 <td className="p-8 text-center text-muted-foreground" colSpan={7}>
-                  No supplier invoices found
+                  No vendor invoices found
                 </td>
               </tr>
             )}

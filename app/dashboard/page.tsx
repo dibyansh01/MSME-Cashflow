@@ -104,7 +104,7 @@ export default async function DashboardPage({
         <StatCard
           title="Total Cash Out"
           value={`₹${data.cashOut.totalCashOut.toLocaleString()}`}
-          subtext="Expenses + Supplier Payments"
+          subtext="Expenses + Vendor Payments"
           href="/expenses"
         />
         <div className="md:col-span-2">
@@ -123,7 +123,7 @@ export default async function DashboardPage({
             title="Vendor Payables"
             value={`₹${data.cashOut.vendorPayables.toLocaleString()}`}
             subtext="Outstanding to Vendors"
-            href="/supplier-invoices"
+            href="/vendor-invoices"
           />
         </div>
       </div>

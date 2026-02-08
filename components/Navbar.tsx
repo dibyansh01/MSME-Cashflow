@@ -15,7 +15,7 @@ const CASH_IN_LINKS = [
 const CASH_OUT_LINKS = [
   { href: '/expenses', label: 'Expenses' },
   { href: '/vendors', label: 'Vendors' },
-  { href: '/supplier-invoices', label: 'Suppliers' },
+  { href: '/vendor-invoices', label: 'Vendor Invoices' },
   { href: '/payables-queue', label: 'Payables' },
 ]
 
@@ -59,11 +59,10 @@ function Dropdown({
       <button
         type="button"
         onClick={() => setOpen(prev => !prev)}
-        className={`flex items-center gap-1 text-sm font-medium transition ${
-          active
-            ? 'text-blue-600'
-            : 'text-gray-600 hover:text-gray-900'
-        }`}
+        className={`flex items-center gap-1 text-sm font-medium transition ${active
+          ? 'text-blue-600'
+          : 'text-gray-600 hover:text-gray-900'
+          }`}
       >
         {label}
         <span className="text-xs">▾</span>
@@ -112,11 +111,10 @@ export default function Navbar() {
           {/* Dashboard */}
           <Link
             href="/"
-            className={`text-sm font-medium ${
-              pathname === '/'
-                ? 'text-blue-600'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
+            className={`text-sm font-medium ${pathname === '/'
+              ? 'text-blue-600'
+              : 'text-gray-600 hover:text-gray-900'
+              }`}
           >
             Dashboard
           </Link>

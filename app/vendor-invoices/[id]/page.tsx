@@ -1,13 +1,13 @@
 import { prisma } from '@/lib/db/prisma'
 import Link from 'next/link'
 
-export default async function SupplierInvoiceDetail({
+export default async function VendorInvoiceDetail({
   params,
 }: {
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const invoice = await prisma.supplierInvoice.findUnique({
+  const invoice = await prisma.vendorInvoice.findUnique({
     where: { id: id },
     include: {
       vendor: true,
@@ -21,7 +21,7 @@ export default async function SupplierInvoiceDetail({
     <div className="p-6 space-y-6">
       <div>
         <h1 className="text-2xl font-bold">
-          Supplier Invoice {invoice.invoiceNo}
+          Vendor Invoice {invoice.invoiceNo}
         </h1>
         <p className="text-gray-600">
           {invoice.vendor.name}
@@ -68,7 +68,7 @@ export default async function SupplierInvoiceDetail({
       {/* Actions */}
       <div className="flex gap-4">
         <Link
-          href={`/supplier-invoices/${invoice.id}/payment`}
+          href={`/vendor-invoices/${invoice.id}/payment`}
           className="px-4 py-2 border rounded hover:bg-gray-50 bg-black text-white"
         >
           + Add Payment

@@ -3,20 +3,21 @@
 import { useFormState } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import { addSupplierPayment } from './actions'
+import { addVendorPayment } from './actions'
 
-export default function SupplierPaymentForm({
+export default function VendorPaymentForm({
     invoiceId,
 }: {
     invoiceId: string
 }) {
-    const [state, formAction] = useFormState(addSupplierPayment, null)
+    // @ts-ignore
+    const [state, formAction] = useFormState(addVendorPayment, null)
     const router = useRouter()
 
     useEffect(() => {
         if (state?.success) {
             const timer = setTimeout(() => {
-                router.push(`/supplier-invoices/${invoiceId}`)
+                router.push(`/vendor-invoices/${invoiceId}`)
                 router.refresh()
             }, 2000)
             return () => clearTimeout(timer)

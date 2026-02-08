@@ -92,7 +92,7 @@ model PaymentEntry {
 
 
 /// =====================
-/// VENDORS / SUPPLIERS
+/// VENDORS
 /// =====================
 model Vendor {
   id          String   @id @default(uuid())
@@ -104,7 +104,7 @@ model Vendor {
   createdAt   DateTime @default(now())
 
   expenses        Expense[]
-  supplierInvoices SupplierInvoice[]
+  invoices        VendorInvoice[]
 }
 
 /// =====================
@@ -138,9 +138,9 @@ model Expense {
 }
 
 /// =====================
-/// SUPPLIER INVOICE (CREDIT)
+/// VENDOR INVOICE (CREDIT)
 /// =====================
-model SupplierInvoice {
+model VendorInvoice {
   id                String   @id @default(uuid())
   vendorId          String
   invoiceNo         String
@@ -152,29 +152,30 @@ model SupplierInvoice {
   outstandingAmount Float
 
   status            String   // UNPAID, PARTIAL, PAID
+  description       String?
   createdAt         DateTime @default(now())
 
   vendor   Vendor @relation(fields: [vendorId], references: [id])
-  payments SupplierPayment[]
+  payments VendorPayment[]
 
   @@index([vendorId])
   @@index([dueDate])
 }
 
 /// =====================
-/// PAYMENTS MADE
+/// VENDOR PAYMENT
 /// =====================
-model SupplierPayment {
-  id               String   @id @default(uuid())
-  supplierInvoiceId String
-  amount           Float
-  paymentDate      DateTime
-  method           String
-  reference        String?
-  notes            String?
-  createdAt        DateTime @default(now())
+model VendorPayment {
+  id              String   @id @default(uuid())
+  vendorInvoiceId String
+  amount          Float
+  paymentDate     DateTime @default(now())
+  method          String   // CASH, UPI, BANK, CHEQUE
+  reference       String?  // Transaction ID
+  notes           String?
+  createdAt       DateTime @default(now())
 
-  supplierInvoice SupplierInvoice @relation(fields: [supplierInvoiceId], references: [id])
+  vendorInvoice VendorInvoice @relation(fields: [vendorInvoiceId], references: [id])
 
-  @@index([supplierInvoiceId])
+  @@index([vendorInvoiceId])
 }

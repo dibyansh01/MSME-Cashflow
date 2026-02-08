@@ -1,8 +1,8 @@
 import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
-import SupplierPaymentForm from './PaymentForm'
+import VendorPaymentForm from './PaymentForm'
 
-export default async function AddSupplierPaymentPage({
+export default async function AddVendorPaymentPage({
     params,
 }: {
     params: Promise<{ id: string }>
@@ -15,10 +15,10 @@ export default async function AddSupplierPaymentPage({
     return (
         <div className="p-6 max-w-xl">
             <h1 className="text-2xl font-bold mb-4">
-                Add Supplier Payment
+                Add Vendor Payment
             </h1>
 
-            <SupplierPaymentForm invoiceId={id} />
+            <VendorPaymentForm invoiceId={id} />
         </div>
     )
 }

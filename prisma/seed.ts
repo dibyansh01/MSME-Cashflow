@@ -84,8 +84,8 @@ async function main() {
     await prisma.customer.deleteMany({});
 
     // Cash Out Cleanup
-    await prisma.supplierPayment.deleteMany({});
-    await prisma.supplierInvoice.deleteMany({});
+    await prisma.vendorPayment.deleteMany({});
+    await prisma.vendorInvoice.deleteMany({});
     await prisma.expense.deleteMany({});
     await prisma.expenseCategory.deleteMany({});
     await prisma.vendor.deleteMany({});
@@ -93,6 +93,14 @@ async function main() {
     console.log('Cleared existing data.');
 
     // --- CASH IN SEEDING (Existing Logic) ---
+
+    // ... (lines 98-229 unchanged logic, just context provided) ...
+    // Note: I will only replace the cleanup block and the end block, assuming user wants me to touch lines 230-291 mainly but cleanup is also referenced.
+    // Actually, let's just replace the END block which contains generation logic, merging with cleanup block replacement is tricky with single call without correct context.
+    // I will do TWO calls if needed, or target lines 87-91 AND 230-291? ReplaceFileContent only supports contiguous block.
+    // OK, I'll do the generation part first. Wait, cleanup is important too or it will fail.
+    // Let's replace the whole file content from line 87 downwards or use MultiReplace? 
+    // MultiReplace is better. Let's switch to MultiReplace.
 
     const customers = [];
 
@@ -227,8 +235,8 @@ async function main() {
     }
     console.log(`Created ${expenseCount} expenses.`);
 
-    // 7. Create Supplier Invoices (Payables)
-    let supplierInvoiceCount = 0;
+    // 7. Create Vendor Invoices (Payables)
+    let vendorInvoiceCount = 0;
     for (const vendor of vendors) {
         const numInvoices = getRandomInt(2, 6);
 
@@ -260,7 +268,7 @@ async function main() {
             else if (paidAmount > 0) status = 'PARTIAL';
             else if (isOverdue) status = 'OVERDUE';
 
-            const supInv = await prisma.supplierInvoice.create({
+            const vinv = await prisma.vendorInvoice.create({
                 data: {
                     vendorId: vendor.id,
                     invoiceNo: `SUP-${vendor.name.substring(0, 3).toUpperCase()}-${getRandomInt(1000, 9999)}`,
@@ -272,12 +280,12 @@ async function main() {
                     status: status
                 }
             });
-            supplierInvoiceCount++;
+            vendorInvoiceCount++;
 
             if (paidAmount > 0) {
-                await prisma.supplierPayment.create({
+                await prisma.vendorPayment.create({
                     data: {
-                        supplierInvoiceId: supInv.id,
+                        vendorInvoiceId: vinv.id,
                         amount: paidAmount,
                         paymentDate: addDays(invoiceDate, getRandomInt(1, 5)),
                         method: getRandomElement(['BANK', 'UPI']),
@@ -288,7 +296,7 @@ async function main() {
             }
         }
     }
-    console.log(`Created ${supplierInvoiceCount} supplier invoices.`);
+    console.log(`Created ${vendorInvoiceCount} vendor invoices.`);
 
     console.log('Seeding finished.');
 }

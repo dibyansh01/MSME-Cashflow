@@ -15,7 +15,7 @@ export default async function PayablesQueuePage() {
   today.setHours(0, 0, 0, 0)
 
   // Fetch overdue invoices
-  const overdueInvoices = await prisma.supplierInvoice.findMany({
+  const overdueInvoices = await prisma.vendorInvoice.findMany({
     where: {
       outstandingAmount: { gt: 0 },
       dueDate: { lt: today },
@@ -28,7 +28,7 @@ export default async function PayablesQueuePage() {
   const next7Days = new Date(today)
   next7Days.setDate(today.getDate() + 7)
 
-  const upcomingInvoices = await prisma.supplierInvoice.findMany({
+  const upcomingInvoices = await prisma.vendorInvoice.findMany({
     where: {
       outstandingAmount: { gt: 0 },
       dueDate: { gte: today, lte: next7Days },
@@ -80,7 +80,7 @@ export default async function PayablesQueuePage() {
                   </td>
                   <td className="p-3">
                     <Link
-                      href={`/supplier-invoices/${inv.id}`}
+                      href={`/vendor-invoices/${inv.id}`}
                       className="text-primary hover:underline"
                     >
                       {inv.invoiceNo}
@@ -91,7 +91,7 @@ export default async function PayablesQueuePage() {
                   </td>
                   <td className="p-3">
                     <Link
-                      href={`/supplier-invoices/${inv.id}/payment`}
+                      href={`/vendor-invoices/${inv.id}/payment`}
                       className="text-sm border px-3 py-1 rounded hover:bg-gray-50"
                     >
                       Pay Now
@@ -145,7 +145,7 @@ export default async function PayablesQueuePage() {
                   </td>
                   <td className="p-3">
                     <Link
-                      href={`/supplier-invoices/${inv.id}`}
+                      href={`/vendor-invoices/${inv.id}`}
                       className="text-primary hover:underline"
                     >
                       {inv.invoiceNo}
@@ -156,7 +156,7 @@ export default async function PayablesQueuePage() {
                   </td>
                   <td className="p-3">
                     <Link
-                      href={`/supplier-invoices/${inv.id}/payment`}
+                      href={`/vendor-invoices/${inv.id}/payment`}
                       className="text-sm border px-3 py-1 rounded hover:bg-gray-50"
                     >
                       Pay Now

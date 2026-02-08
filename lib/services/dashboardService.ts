@@ -80,29 +80,29 @@ export async function getDashboardData(range?: DateRange) {
     });
     const totalExpenseAmount = expenses._sum.amount || 0;
 
-    const supplierPayments = await prisma.supplierPayment.aggregate({
+    const vendorPayments = await prisma.vendorPayment.aggregate({
         _sum: { amount: true },
     });
-    const totalSupplierPaymentAmount = supplierPayments._sum.amount || 0;
+    const totalVendorPaymentAmount = vendorPayments._sum.amount || 0;
 
-    const totalCashOut = totalExpenseAmount + totalSupplierPaymentAmount;
+    const totalCashOut = totalExpenseAmount + totalVendorPaymentAmount;
     const netCashPosition = totalCollected - totalCashOut;
 
 
     // ============================================
     // 3. VENDOR PAYABLES
     // ============================================
-    const supplierInvoices = await prisma.supplierInvoice.findMany();
+    const vendorInvoices = await prisma.vendorInvoice.findMany();
 
     let totalVendorOutstanding = 0;
     let totalVendorOverdue = 0;
 
-    for (const sinv of supplierInvoices) {
-        totalVendorOutstanding += sinv.outstandingAmount;
-        if (sinv.outstandingAmount > 0) {
-            const isOverdue = new Date() > sinv.dueDate;
+    for (const vinv of vendorInvoices) {
+        totalVendorOutstanding += vinv.outstandingAmount;
+        if (vinv.outstandingAmount > 0) {
+            const isOverdue = new Date() > vinv.dueDate;
             if (isOverdue) {
-                totalVendorOverdue += sinv.outstandingAmount;
+                totalVendorOverdue += vinv.outstandingAmount;
             }
         }
     }
@@ -136,7 +136,7 @@ export async function getDashboardData(range?: DateRange) {
         });
         pastInflows = collections._sum.amount || 0;
 
-        // Expenses + SupplierPayments (Out)
+        // Expenses + VendorPayments (Out)
         const expenseSum = await prisma.expense.aggregate({
             _sum: { amount: true },
             where: {
@@ -146,7 +146,7 @@ export async function getDashboardData(range?: DateRange) {
                 }
             }
         });
-        const supplierPaymentSum = await prisma.supplierPayment.aggregate({
+        const vendorPaymentSum = await prisma.vendorPayment.aggregate({
             _sum: { amount: true },
             where: {
                 paymentDate: {
@@ -155,7 +155,7 @@ export async function getDashboardData(range?: DateRange) {
                 }
             }
         });
-        pastOutflows = (expenseSum._sum.amount || 0) + (supplierPaymentSum._sum.amount || 0);
+        pastOutflows = (expenseSum._sum.amount || 0) + (vendorPaymentSum._sum.amount || 0);
     }
 
     // --- FUTURE: PROJECTIONS ---
@@ -175,8 +175,8 @@ export async function getDashboardData(range?: DateRange) {
         });
         futureInflows = expectedIn._sum.outstandingAmount || 0;
 
-        // Expected Outflows (Supplier Invoices Due)
-        const expectedOut = await prisma.supplierInvoice.aggregate({
+        // Expected Outflows (Vendor Invoices Due)
+        const expectedOut = await prisma.vendorInvoice.aggregate({
             _sum: { outstandingAmount: true },
             where: {
                 outstandingAmount: { gt: 0 },

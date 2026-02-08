@@ -64,7 +64,7 @@ export default async function VendorsPage({
 
     if (status === 'OVERDUE') {
       whereClause.AND.push({
-        supplierInvoices: {
+        invoices: {
           some: {
             outstandingAmount: { gt: 0 },
             dueDate: { lt: today }
@@ -73,7 +73,7 @@ export default async function VendorsPage({
       })
     } else if (status === 'PENDING') {
       whereClause.AND.push({
-        supplierInvoices: {
+        invoices: {
           some: {
             outstandingAmount: { gt: 0 }
           }
@@ -81,7 +81,7 @@ export default async function VendorsPage({
       })
     } else if (status === 'PAID') {
       whereClause.AND.push({
-        supplierInvoices: {
+        invoices: {
           some: {},
           every: {
             outstandingAmount: 0
@@ -90,7 +90,7 @@ export default async function VendorsPage({
       })
     } else if (status === 'NEW') {
       whereClause.AND.push({
-        supplierInvoices: {
+        invoices: {
           none: {}
         }
       })
@@ -102,7 +102,7 @@ export default async function VendorsPage({
     prisma.vendor.findMany({
       where: whereClause,
       include: {
-        supplierInvoices: {
+        invoices: {
           select: {
             dueDate: true,
             outstandingAmount: true,
@@ -195,7 +195,7 @@ export default async function VendorsPage({
               <tr key={v.id} className="hover:bg-muted/50 transition-colors">
                 <td className="p-3 font-medium">
                   <Link
-                    href={`/supplier-invoices?q=${encodeURIComponent(v.name)}`}
+                    href={`/vendor-invoices?q=${encodeURIComponent(v.name)}`}
                     className="text-primary hover:underline"
                   >
                     {v.name}
@@ -203,8 +203,8 @@ export default async function VendorsPage({
                 </td>
                 <td className="p-3">
                   {(() => {
-                    const invoices = v.supplierInvoices || []
-                    const hasInvoices = invoices.length > 0
+                    const vendorInvoices = v.invoices || []
+                    const hasInvoices = vendorInvoices.length > 0
 
                     if (!hasInvoices) {
                       return <Badge variant="secondary">New</Badge>
@@ -213,15 +213,15 @@ export default async function VendorsPage({
                     const today = new Date()
                     today.setHours(0, 0, 0, 0)
 
-                    const hasOverdue = invoices.some(
-                      (inv) => inv.outstandingAmount > 0 && new Date(inv.dueDate) < today
+                    const hasOverdue = vendorInvoices.some(
+                      (inv) => inv.status === 'OVERDUE' || (inv.outstandingAmount > 0 && new Date(inv.dueDate) < today)
                     )
 
                     if (hasOverdue) {
                       return <Badge variant="danger">Overdue</Badge>
                     }
 
-                    const totalOutstanding = invoices.reduce((sum, inv) => sum + inv.outstandingAmount, 0)
+                    const totalOutstanding = vendorInvoices.reduce((sum, inv) => sum + inv.outstandingAmount, 0)
 
                     if (totalOutstanding > 0) {
                       return <Badge variant="warning">Pending</Badge>

@@ -2,13 +2,12 @@
 
 import { prisma } from '@/lib/db/prisma'
 import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
 
-export async function addSupplierPayment(
+export async function addVendorPayment(
     prevState: { error?: string } | null,
     formData: FormData
 ) {
-    const supplierInvoiceId = formData.get('invoiceId') as string
+    const vendorInvoiceId = formData.get('invoiceId') as string
     const amountStr = formData.get('amount') as string
     const method = formData.get('method') as string
     const reference = formData.get('reference') as string
@@ -18,7 +17,7 @@ export async function addSupplierPayment(
     const amount = Number(amountStr)
     const paymentDate = new Date(paymentDateStr)
 
-    if (!supplierInvoiceId || !amount || amount <= 0) {
+    if (!vendorInvoiceId || !amount || amount <= 0) {
         return { error: 'Please enter a valid payment amount' }
     }
 
@@ -26,13 +25,13 @@ export async function addSupplierPayment(
         return { error: 'Please select a valid payment date' }
     }
 
-    const invoice = await prisma.supplierInvoice.findUnique({
-        where: { id: supplierInvoiceId },
+    const invoice = await prisma.vendorInvoice.findUnique({
+        where: { id: vendorInvoiceId },
         include: { payments: true },
     })
 
     if (!invoice) {
-        return { error: 'Supplier Invoice not found' }
+        return { error: 'Vendor Invoice not found' }
     }
 
     const totalPaidSoFar = invoice.payments.reduce(
@@ -60,9 +59,9 @@ export async function addSupplierPayment(
     }
 
     await prisma.$transaction([
-        prisma.supplierPayment.create({
+        prisma.vendorPayment.create({
             data: {
-                supplierInvoiceId,
+                vendorInvoiceId,
                 amount,
                 method,
                 reference,
@@ -71,8 +70,8 @@ export async function addSupplierPayment(
             },
         }),
 
-        prisma.supplierInvoice.update({
-            where: { id: supplierInvoiceId },
+        prisma.vendorInvoice.update({
+            where: { id: vendorInvoiceId },
             data: {
                 paidAmount: newTotalPaid,
                 outstandingAmount: newOutstanding,
@@ -81,8 +80,8 @@ export async function addSupplierPayment(
         }),
     ])
 
-    revalidatePath(`/supplier-invoices/${supplierInvoiceId}`)
-    revalidatePath('/supplier-invoices')
+    revalidatePath(`/vendor-invoices/${vendorInvoiceId}`)
+    revalidatePath('/vendor-invoices')
     revalidatePath('/dashboard')
 
     return { success: true, message: 'Payment recorded successfully!' }
