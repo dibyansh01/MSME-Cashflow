@@ -8,6 +8,14 @@ import { AppLayout } from '@/components/AppLayout'
  * @param {Object} props - Component props
  * @param {React.ReactNode} props.children - Child components to render
  */
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'MSME CashFlow',
+  description: 'Cashflow management for MSMEs',
+  viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
+}
+
 export default function RootLayout({
   children,
 }: {
