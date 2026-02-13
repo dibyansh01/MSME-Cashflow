@@ -202,7 +202,7 @@ export default async function InvoicesPage({
               <th className="text-left p-3 font-medium text-muted-foreground">Location</th>
               <th className="text-left p-3 font-medium text-muted-foreground">Invoice Date</th>
               <th className="text-left p-3 font-medium text-muted-foreground">Due Date</th>
-              <th className="text-left p-3 font-medium text-muted-foreground">Invoice Amount</th>
+              <th className="text-left p-3 font-medium text-muted-foreground">Amount</th>
               <th className="text-left p-3 font-medium text-muted-foreground">Outstanding</th>
               <th className="text-left p-3 font-medium text-muted-foreground">Status</th>
             </tr>
@@ -246,7 +246,14 @@ export default async function InvoicesPage({
                     {new Date(inv.dueDate).toLocaleDateString()}
                   </td>
                   <td className="p-3">
-                    ₹{inv.invoiceAmount.toLocaleString()}
+                    <div className="font-medium">
+                      ₹{(inv.invoiceAmount + (inv.gstAmount || 0)).toLocaleString()}
+                    </div>
+                    {inv.gstAmount && inv.gstAmount > 0 && (
+                      <div className="text-xs text-muted-foreground">
+                        {inv.invoiceAmount.toLocaleString()} + {inv.gstAmount.toLocaleString()} (GST)
+                      </div>
+                    )}
                   </td>
                   <td className="p-3 font-medium">
                     ₹{inv.outstandingAmount.toLocaleString()}

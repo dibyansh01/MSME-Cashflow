@@ -14,6 +14,8 @@ export async function createInvoice(prevState: InvoiceFormState, formData: FormD
   const invoiceDateStr = formData.get('invoiceDate') as string
   const invoiceAmountStr = formData.get('invoiceAmount') as string
   const paidAmountStr = formData.get('paidAmount') as string
+  const gstRateStr = formData.get('gstRate') as string
+  const gstAmountStr = formData.get('gstAmount') as string
 
   if (!customerId || !invoiceNo || !invoiceDateStr || !invoiceAmountStr || !paidAmountStr) {
     return { error: 'Missing required fields' }
@@ -21,12 +23,17 @@ export async function createInvoice(prevState: InvoiceFormState, formData: FormD
 
   const invoiceAmount = Number(invoiceAmountStr)
   const paidAmount = Number(paidAmountStr)
+  const gstRate = gstRateStr ? Number(gstRateStr) : null
+  const gstAmount = gstAmountStr ? Number(gstAmountStr) : null
 
-  if (paidAmount > invoiceAmount) {
-    return { error: 'Paid amount cannot be greater than invoice amount' }
+  // Total invoice value including GST
+  const totalAmount = invoiceAmount + (gstAmount || 0)
+
+  if (paidAmount > totalAmount) {
+    return { error: 'Paid amount cannot be greater than total invoice amount' }
   }
 
-  const outstandingAmount = invoiceAmount - paidAmount
+  const outstandingAmount = totalAmount - paidAmount
   const invoiceDate = new Date(invoiceDateStr)
 
   try {
@@ -54,6 +61,8 @@ export async function createInvoice(prevState: InvoiceFormState, formData: FormD
         invoiceDate,
         dueDate,
         invoiceAmount,
+        gstRate,
+        gstAmount,
         paidAmount,
         outstandingAmount,
         status,

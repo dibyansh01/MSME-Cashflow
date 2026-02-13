@@ -42,14 +42,18 @@ export async function addPayment(
 
   const newTotalPaid = totalPaidSoFar + amount
 
-  if (newTotalPaid > invoice.invoiceAmount) {
+  // Calculate total invoice amount (Base + GST)
+  const gstAmount = invoice.gstAmount || 0
+  const totalInvoiceAmount = invoice.invoiceAmount + gstAmount
+
+  if (newTotalPaid > totalInvoiceAmount) {
     return {
       error: `Payment exceeds outstanding balance. Outstanding is ₹${invoice.outstandingAmount.toLocaleString()}`,
     }
   }
 
   const newOutstanding =
-    invoice.invoiceAmount - newTotalPaid
+    totalInvoiceAmount - newTotalPaid
 
   let newStatus: 'UNPAID' | 'PARTIAL' | 'PAID' = 'UNPAID'
 

@@ -1,9 +1,9 @@
 'use client'
 
 import { useFormState } from 'react-dom'
-import { createInvoice, type InvoiceFormState } from '../actions'
 import Link from 'next/link'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { createInvoice, type InvoiceFormState } from '../actions'
 
 export default function InvoiceForm({ customers }: { customers: { id: string; name: string }[] }) {
     const initialState: InvoiceFormState = {
@@ -14,9 +14,18 @@ export default function InvoiceForm({ customers }: { customers: { id: string; na
     const [state, formAction] = useFormState(createInvoice, initialState)
     const formRef = useRef<HTMLFormElement>(null)
 
+    // State for GST calculation
+    const [baseAmount, setBaseAmount] = useState<number | ''>('')
+    const [gstRate, setGstRate] = useState<number>(0)
+
+    const gstAmount = baseAmount && gstRate ? (Number(baseAmount) * gstRate) / 100 : 0
+    const totalAmount = (Number(baseAmount) || 0) + gstAmount
+
     useEffect(() => {
         if (state.success) {
             formRef.current?.reset()
+            setBaseAmount('')
+            setGstRate(0)
         }
     }, [state.success])
 
@@ -76,18 +85,68 @@ export default function InvoiceForm({ customers }: { customers: { id: string; na
                 />
             </div>
 
-            <div>
-                <label className="block text-sm font-medium mb-1">
-                    Invoice Amount *
-                </label>
-                <input
-                    name="invoiceAmount"
-                    type="number"
-                    step="0.01"
-                    required
-                    className="border p-2 w-full rounded"
-                    placeholder="50000"
-                />
+            <div className="border p-4 rounded-lg bg-gray-50 space-y-4">
+                <h3 className="font-semibold text-gray-700">Payment Details</h3>
+
+                <div>
+                    <label className="block text-sm font-medium mb-1">
+                        Base Amount (Taxable Value) *
+                    </label>
+                    <input
+                        name="invoiceAmount"
+                        type="number"
+                        step="0.01"
+                        required
+                        className="border p-2 w-full rounded"
+                        placeholder="e.g. 50000"
+                        value={baseAmount}
+                        onChange={(e) => setBaseAmount(e.target.value === '' ? '' : Number(e.target.value))}
+                    />
+                </div>
+
+                {/* GST Section */}
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-sm font-medium mb-1">
+                            GST Rate
+                        </label>
+                        <input
+                            type="number"
+                            name="gstRate"
+                            className="border p-2 w-full rounded"
+                            value={gstRate}
+                            onChange={(e) => {
+                                const value = Number(e.target.value);
+                                if (value >= 0 && value <= 99 && Number.isInteger(value)) {
+                                    setGstRate(value);
+                                }
+                            }}
+                            min="0"
+                            max="99"
+                            step="1"
+                            pattern="[0-9]*"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium mb-1">
+                            GST Amount
+                        </label>
+                        <input
+                            name="gstAmount"
+                            type="number"
+                            step="0.01"
+                            readOnly
+                            className="border p-2 w-full rounded bg-gray-100 text-gray-600 cursor-not-allowed"
+                            value={gstAmount.toFixed(2)}
+                        />
+                    </div>
+                </div>
+
+                <div className="flex justify-between items-center border-t pt-3 mt-2">
+                    <span className="font-medium text-gray-700">Total Invoice Value:</span>
+                    <span className="text-xl font-bold">₹{totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                </div>
             </div>
 
             <div>
