@@ -41,7 +41,7 @@ export function Filter({ paramName, label, options, className = '' }: FilterProp
         <div className={`relative ${className}`}>
             {label && <label className="sr-only">{label}</label>}
             <select
-                className="block w-full rounded-md border border-gray-200 py-[9px] pl-3 pr-10 text-sm outline-2 bg-card text-foreground focus:ring-1 focus:ring-primary focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
+                className="block w-full rounded-md border border-slate-300 py-[9px] pl-3 pr-10 text-sm outline-2 bg-white text-slate-900 focus:ring-1 focus:ring-primary focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
                 onChange={handleChange}
                 value={currentValue}
             >

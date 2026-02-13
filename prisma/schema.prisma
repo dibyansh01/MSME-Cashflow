@@ -83,3 +83,96 @@ model PaymentEntry {
 
   @@index([invoiceId])
 }
+
+/// ======================================================
+/// ================= CASH OUT ============================
+/// ======================================================
+
+
+/// =====================
+/// VENDORS / SUPPLIERS
+/// =====================
+model Vendor {
+  id          String   @id @default(uuid())
+  name        String
+  phone       String?
+  email       String?
+  creditTerms Int?     // days
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  expenses        Expense[]
+  supplierInvoices SupplierInvoice[]
+}
+
+/// =====================
+/// EXPENSE CATEGORIES
+/// =====================
+model ExpenseCategory {
+  id        String   @id @default(uuid())
+  name      String   // Rent, Salary, Raw Material, etc.
+  createdAt DateTime @default(now())
+
+  expenses Expense[]
+}
+
+/// =====================
+/// EXPENSE (IMMEDIATE CASH OUT)
+/// =====================
+model Expense {
+  id          String   @id @default(uuid())
+  vendorId    String?
+  categoryId  String
+  expenseDate DateTime
+  amount      Float
+  paymentMode String   // CASH, BANK, UPI
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  vendor   Vendor?         @relation(fields: [vendorId], references: [id])
+  category ExpenseCategory @relation(fields: [categoryId], references: [id])
+
+  @@index([expenseDate])
+}
+
+/// =====================
+/// SUPPLIER INVOICE (CREDIT)
+/// =====================
+model SupplierInvoice {
+  id                String   @id @default(uuid())
+  vendorId          String
+  invoiceNo         String
+  invoiceDate       DateTime
+  dueDate           DateTime
+
+  invoiceAmount     Float
+  paidAmount        Float    @default(0)
+  outstandingAmount Float
+
+  status            String   // UNPAID, PARTIAL, PAID
+  createdAt         DateTime @default(now())
+
+  vendor   Vendor @relation(fields: [vendorId], references: [id])
+  payments SupplierPayment[]
+
+  @@index([vendorId])
+  @@index([dueDate])
+}
+
+/// =====================
+/// PAYMENTS MADE
+/// =====================
+model SupplierPayment {
+  id               String   @id @default(uuid())
+  supplierInvoiceId String
+  amount           Float
+  paymentDate      DateTime
+  method           String
+  reference        String?
+  notes            String?
+  createdAt        DateTime @default(now())
+
+  supplierInvoice SupplierInvoice @relation(fields: [supplierInvoiceId], references: [id])
+
+  @@index([supplierInvoiceId])
+}

@@ -11,6 +11,8 @@ import { Search } from '@/app/components/ui/Search'
 import { Filter } from '@/app/components/ui/Filter'
 import { DateRangeFilter } from '@/app/components/ui/DateRangeFilter'
 import { ExportButton } from '@/app/components/ui/ExportButton'
+import { FilterPopover } from '@/app/components/ui/FilterPopover'
+import { ActiveFilters } from '@/app/components/ui/ActiveFilters'
 
 /**
  * Follow-ups Queue Page ("Collections").
@@ -139,21 +141,36 @@ export default async function FollowupsQueuePage({
           <h1 className="text-2xl font-bold whitespace-nowrap shrink-0">Collections Queue</h1>
           <div className="flex flex-wrap items-end gap-3 w-full md:w-auto justify-start md:justify-end">
             <Search placeholder="Search customer..." />
-            <Filter
-              paramName="status"
-              label="Last Status"
-              options={[
-                { label: 'Scheduled', value: 'SCHEDULED' },
-                { label: 'Promised', value: 'PROMISED' },
-                { label: 'No Response', value: 'NO_RESPONSE' },
-                { label: 'Disputed', value: 'DISPUTED' },
-              ]}
-            />
-            <DateRangeFilter label="Next Follow-up" paramPrefix="nextFollowUp" />
-            <DateRangeFilter label="Due Date" paramPrefix="dueDate" />
+            <FilterPopover filterKeys={['status', 'nextFollowUpStart', 'nextFollowUpEnd', 'dueDateStart', 'dueDateEnd']}>
+              <Filter
+                paramName="status"
+                label="Last Status"
+                options={[
+                  { label: 'Scheduled', value: 'SCHEDULED' },
+                  { label: 'Promised', value: 'PROMISED' },
+                  { label: 'No Response', value: 'NO_RESPONSE' },
+                  { label: 'Disputed', value: 'DISPUTED' },
+                ]}
+                className="w-full"
+              />
+              <DateRangeFilter label="Next Follow-up" paramPrefix="nextFollowUp" />
+              <DateRangeFilter label="Due Date" paramPrefix="dueDate" />
+            </FilterPopover>
             <ExportButton entity="collection" />
           </div>
         </div>
+      </div>
+
+      <div className="mb-4">
+        <ActiveFilters
+          filters={[
+            { key: 'status', label: 'Last Status' },
+            { key: 'nextFollowUpStart', label: 'Follow-up Start' },
+            { key: 'nextFollowUpEnd', label: 'Follow-up End' },
+            { key: 'dueDateStart', label: 'Due Date Start' },
+            { key: 'dueDateEnd', label: 'Due Date End' },
+          ]}
+        />
       </div>
 
       <div className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden">

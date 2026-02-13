@@ -37,19 +37,19 @@ export function DateRangeFilter({ label, paramPrefix, className = '' }: DateRang
 
     return (
         <div className={`flex flex-col gap-1 ${className}`}>
-            <span className="text-xs font-medium text-gray-500 ml-1">{label}</span>
+            <span className="text-xs font-medium text-slate-600 ml-1">{label}</span>
             <div className="flex items-center gap-2">
                 <input
                     type="date"
-                    className="rounded-md border border-border py-1.5 px-3 text-sm bg-background text-foreground focus:ring-1 focus:ring-primary focus:border-primary shadow-sm"
+                    className="rounded-md border border-slate-300 py-1.5 px-3 text-sm bg-white text-slate-900 focus:ring-1 focus:ring-primary focus:border-primary shadow-sm"
                     value={currentStart}
                     onChange={(e) => handleDateChange('start', e.target.value)}
                     placeholder="Start"
                 />
-                <span className="text-gray-400">-</span>
+                <span className="text-slate-400">-</span>
                 <input
                     type="date"
-                    className="rounded-md border border-border py-1.5 px-3 text-sm bg-background text-foreground focus:ring-1 focus:ring-primary focus:border-primary shadow-sm"
+                    className="rounded-md border border-slate-300 py-1.5 px-3 text-sm bg-white text-slate-900 focus:ring-1 focus:ring-primary focus:border-primary shadow-sm"
                     value={currentEnd}
                     onChange={(e) => handleDateChange('end', e.target.value)}
                     placeholder="End"
