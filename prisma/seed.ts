@@ -26,6 +26,11 @@ const addDays = (date: Date, days: number): Date => {
     return result;
 };
 
+const getRandomFloat = (min: number, max: number, decimals: number = 2) => {
+    const str = (Math.random() * (max - min) + min).toFixed(decimals);
+    return parseFloat(str);
+};
+
 // --- Data Constants ---
 
 const COMPANY_NAMES = [
@@ -71,6 +76,8 @@ const CITIES = [
     "San Francisco", "Tokyo", "Paris", "Chicago", "Boston"
 ];
 
+const GST_RATES = [0, 5, 12, 18, 28];
+
 // --- Main Seeding Logic ---
 
 async function main() {
@@ -78,12 +85,13 @@ async function main() {
 
     // 1. Cleanup existing data (Order matters for foreign keys)
     console.log('Cleaning up old data...');
-    await prisma.followUp.deleteMany({});
+    // Cash In
     await prisma.paymentEntry.deleteMany({});
+    await prisma.followUp.deleteMany({});
     await prisma.invoice.deleteMany({});
     await prisma.customer.deleteMany({});
 
-    // Cash Out Cleanup
+    // Cash Out
     await prisma.vendorPayment.deleteMany({});
     await prisma.vendorInvoice.deleteMany({});
     await prisma.expense.deleteMany({});
@@ -91,16 +99,6 @@ async function main() {
     await prisma.vendor.deleteMany({});
 
     console.log('Cleared existing data.');
-
-    // --- CASH IN SEEDING (Existing Logic) ---
-
-    // ... (lines 98-229 unchanged logic, just context provided) ...
-    // Note: I will only replace the cleanup block and the end block, assuming user wants me to touch lines 230-291 mainly but cleanup is also referenced.
-    // Actually, let's just replace the END block which contains generation logic, merging with cleanup block replacement is tricky with single call without correct context.
-    // I will do TWO calls if needed, or target lines 87-91 AND 230-291? ReplaceFileContent only supports contiguous block.
-    // OK, I'll do the generation part first. Wait, cleanup is important too or it will fail.
-    // Let's replace the whole file content from line 87 downwards or use MultiReplace? 
-    // MultiReplace is better. Let's switch to MultiReplace.
 
     const customers = [];
 
@@ -121,27 +119,44 @@ async function main() {
     }
     console.log(`Created ${customers.length} customers.`);
 
-    // 3. Create Invoices
+    // 3. Create Invoices (Sales with GST)
     let invoiceCount = 0;
     for (const customer of customers) {
         const numInvoices = getRandomInt(3, 8);
         for (let j = 0; j < numInvoices; j++) {
-            const invoiceDate = addDays(new Date(), -getRandomInt(0, 90));
+            const invoiceDate = addDays(new Date(), -getRandomInt(0, 90)); // Past 3 months mainly
             const dueDate = addDays(invoiceDate, customer.creditTerms || 30);
             const today = new Date();
             const isOverdue = dueDate < today;
-            const amount = getRandomInt(1000, 50000);
 
+            // Financials
+            const baseAmount = getRandomInt(1000, 50000);
+            const gstRate = getRandomElement(GST_RATES);
+            const gstAmount = parseFloat((baseAmount * (gstRate / 100)).toFixed(2));
+            const totalAmount = baseAmount + gstAmount;
+
+            // Status Logic
             let status = 'UNPAID';
             let paidAmount = 0;
             const scenario = Math.random();
 
-            if (scenario < 0.3) { status = 'PAID'; paidAmount = amount; }
-            else if (scenario < 0.6) { status = isOverdue ? 'OVERDUE' : 'UNPAID'; paidAmount = 0; }
-            else if (scenario < 0.7) { status = 'PARTIAL'; paidAmount = getRandomInt(100, amount - 100); }
-            else { status = isOverdue ? 'OVERDUE' : 'UNPAID'; }
+            if (scenario < 0.3) {
+                status = 'PAID';
+                paidAmount = totalAmount; // User pays full including GST
+            }
+            else if (scenario < 0.6) {
+                status = isOverdue ? 'OVERDUE' : 'UNPAID';
+                paidAmount = 0;
+            }
+            else if (scenario < 0.7) {
+                status = 'PARTIAL';
+                paidAmount = getRandomInt(100, Math.floor(totalAmount - 100));
+            }
+            else {
+                status = isOverdue ? 'OVERDUE' : 'UNPAID';
+            }
 
-            if (paidAmount >= amount) status = 'PAID';
+            if (paidAmount >= totalAmount) status = 'PAID';
             else if (paidAmount > 0) status = 'PARTIAL';
             else if (isOverdue) status = 'OVERDUE';
 
@@ -151,9 +166,14 @@ async function main() {
                     invoiceNo: `INV-${new Date().getFullYear()}-${getRandomInt(1000, 9999)}-${invoiceCount}`,
                     invoiceDate: invoiceDate,
                     dueDate: dueDate,
-                    invoiceAmount: amount,
+
+                    invoiceAmount: baseAmount,
+                    gstAmount: gstAmount,
+                    gstRate: gstRate,
+                    isGstInclusive: false,
+
                     paidAmount: paidAmount,
-                    outstandingAmount: amount - paidAmount,
+                    outstandingAmount: totalAmount - paidAmount,
                     status: status,
                 }
             });
@@ -188,7 +208,7 @@ async function main() {
     console.log(`Created ${invoiceCount} customer invoices.`);
 
 
-    // --- CASH OUT SEEDING (New Logic) ---
+    // --- CASH OUT SEEDING ---
 
     // 4. Create Vendors
     const vendors = [];
@@ -216,17 +236,31 @@ async function main() {
 
     // 6. Create Expenses (Immediate Cash Out)
     let expenseCount = 0;
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 40; i++) {
         const cat = getRandomElement(categories);
         const relatedVendor = Math.random() > 0.5 ? getRandomElement(vendors) : null;
-        const amount = getRandomInt(500, 15000);
+
+        // Financials
+        const baseAmount = getRandomInt(500, 15000);
+        const gstRate = getRandomElement(GST_RATES);
+        const gstAmount = parseFloat((baseAmount * (gstRate / 100)).toFixed(2));
+
+        // GST Eligibility (Claimable vs Blocked)
+        // 80% Eligible, 20% Blocked
+        const isGstEligible = Math.random() < 0.8;
 
         await prisma.expense.create({
             data: {
                 categoryId: cat.id,
                 vendorId: relatedVendor?.id,
                 expenseDate: addDays(new Date(), -getRandomInt(0, 60)),
-                amount: amount,
+                amount: baseAmount,
+
+                gstAmount: gstAmount,
+                gstRate: gstRate,
+                isGstInclusive: false,
+                isGstEligible: isGstEligible,
+
                 paymentMode: getRandomElement(['CASH', 'UPI', 'BANK']),
                 notes: `Payment for ${cat.name}`
             }
@@ -245,7 +279,15 @@ async function main() {
             const dueDate = addDays(invoiceDate, vendor.creditTerms || 30);
             const today = new Date();
             const isOverdue = dueDate < today;
-            const amount = getRandomInt(2000, 70000);
+
+            // Financials
+            const baseAmount = getRandomInt(2000, 70000);
+            const gstRate = getRandomElement(GST_RATES);
+            // Vendor invoices usually have GST
+            const gstAmount = parseFloat((baseAmount * (gstRate / 100)).toFixed(2));
+            const totalAmount = baseAmount + gstAmount;
+
+            const isGstEligible = Math.random() < 0.9; // 90% claimable for vendors
 
             // Scenario: 40% Paid, 30% Unpaid, 30% Overdue
             let status = 'UNPAID';
@@ -254,17 +296,17 @@ async function main() {
 
             if (scenario < 0.4) {
                 status = 'PAID';
-                paidAmount = amount;
+                paidAmount = totalAmount;
             } else if (scenario < 0.7) {
                 status = isOverdue ? 'OVERDUE' : 'UNPAID';
                 paidAmount = 0;
             } else {
                 // Partial
                 status = 'PARTIAL';
-                paidAmount = getRandomInt(500, amount - 100);
+                paidAmount = getRandomInt(500, Math.floor(totalAmount - 100));
             }
 
-            if (paidAmount >= amount) status = 'PAID';
+            if (paidAmount >= totalAmount) status = 'PAID';
             else if (paidAmount > 0) status = 'PARTIAL';
             else if (isOverdue) status = 'OVERDUE';
 
@@ -274,9 +316,15 @@ async function main() {
                     invoiceNo: `SUP-${vendor.name.substring(0, 3).toUpperCase()}-${getRandomInt(1000, 9999)}`,
                     invoiceDate: invoiceDate,
                     dueDate: dueDate,
-                    invoiceAmount: amount,
+
+                    invoiceAmount: baseAmount,
+                    gstAmount: gstAmount,
+                    gstRate: gstRate,
+                    isGstInclusive: false,
+                    isGstEligible: isGstEligible,
+
                     paidAmount: paidAmount,
-                    outstandingAmount: amount - paidAmount,
+                    outstandingAmount: totalAmount - paidAmount,
                     status: status
                 }
             });

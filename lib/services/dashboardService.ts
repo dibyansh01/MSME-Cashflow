@@ -22,10 +22,17 @@ export async function getDashboardData(range?: DateRange) {
     fromStartOfDay.setHours(0, 0, 0, 0);
 
     // ============================================
-    // 1. CASH-IN SNAPSHOT (HISTORICAL / TOTALS)
+    // 1. CASH-IN SNAPSHOT (FILTERED BY DATE)
     // ============================================
 
+    // Filter Invoices by Date Range
     const invoices = await prisma.invoice.findMany({
+        where: {
+            invoiceDate: {
+                gte: fromStartOfDay,
+                lte: toEndOfDay
+            }
+        },
         include: { customer: true },
     });
 
@@ -39,7 +46,17 @@ export async function getDashboardData(range?: DateRange) {
 
     for (const inv of invoices) {
         totalInvoiced += inv.invoiceAmount;
-        totalCollected += inv.paidAmount;
+        // Logic Note: Paid Amount usually checked against Payment Entries for *when* it was paid.
+        // However, standard dashboard "Invoiced vs Collected" in a date range often means:
+        // "Invoices created in this range" and "How much of THOSE is collected".
+        // OR "Total Collections received in this range" (regardless of invoice date).
+        // Given the user wants "Global Applicability", the standard accounting interaction is:
+        // - Invoiced: Sum of invoices created in period.
+        // - Collected: Sum of payments received in period. << This requires a separate query on PaymentEntry
+        // - Outstanding: Sum of outstanding on invoices created in period? OR Current Total Outstanding?
+        // Let's stick to "Invoices Created In Period" for now for simplicity of "Snapshot of Business Generated".
+
+        totalCollected += inv.paidAmount; // This is collected *for these invoices*
         totalOutstanding += inv.outstandingAmount;
 
         if (inv.outstandingAmount > 0) {
@@ -64,6 +81,20 @@ export async function getDashboardData(range?: DateRange) {
         }
     }
 
+    // Overwrite Total Collected with ACTUAL Collections in this period? 
+    // If we want "Cash Flow", yes. "Payment Collected" tile usually implies cash in hand during period.
+    const actualCollections = await prisma.paymentEntry.aggregate({
+        _sum: { amount: true },
+        where: {
+            paymentDate: {
+                gte: fromStartOfDay,
+                lte: toEndOfDay
+            }
+        }
+    });
+    totalCollected = actualCollections._sum.amount || 0;
+
+
     const topDefaulters = Object.values(customerOverdueMap)
         .sort((a, b) => b.amount - a.amount)
         .slice(0, 5);
@@ -72,27 +103,46 @@ export async function getDashboardData(range?: DateRange) {
 
 
     // ============================================
-    // 2. CASH-OUT & NET CASH (HISTORICAL / TOTALS)
+    // 2. CASH-OUT & NET CASH (FILTERED BY DATE)
     // ============================================
 
     const expenses = await prisma.expense.aggregate({
         _sum: { amount: true },
+        where: {
+            expenseDate: {
+                gte: fromStartOfDay,
+                lte: toEndOfDay
+            }
+        }
     });
     const totalExpenseAmount = expenses._sum.amount || 0;
 
     const vendorPayments = await prisma.vendorPayment.aggregate({
         _sum: { amount: true },
+        where: {
+            paymentDate: {
+                gte: fromStartOfDay,
+                lte: toEndOfDay
+            }
+        }
     });
     const totalVendorPaymentAmount = vendorPayments._sum.amount || 0;
 
     const totalCashOut = totalExpenseAmount + totalVendorPaymentAmount;
-    const netCashPosition = totalCollected - totalCashOut;
+    const netCashPosition = totalCollected - totalCashOut; // Cash In (Period) - Cash Out (Period)
 
 
     // ============================================
-    // 3. VENDOR PAYABLES
+    // 3. VENDOR PAYABLES (FILTERED BY DATE - Invoices generated)
     // ============================================
-    const vendorInvoices = await prisma.vendorInvoice.findMany();
+    const vendorInvoices = await prisma.vendorInvoice.findMany({
+        where: {
+            invoiceDate: {
+                gte: fromStartOfDay,
+                lte: toEndOfDay
+            }
+        }
+    });
 
     let totalVendorOutstanding = 0;
     let totalVendorOverdue = 0;

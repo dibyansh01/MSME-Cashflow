@@ -1,14 +1,16 @@
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { Calendar, ChevronDown, X } from 'lucide-react'
 
 export function DashboardFilter() {
     const router = useRouter()
     const searchParams = useSearchParams()
+    const [isOpen, setIsOpen] = useState(false)
+    const popoverRef = useRef<HTMLDivElement>(null)
 
     const [selectedPreset, setSelectedPreset] = useState('next_30')
-    const [showCustom, setShowCustom] = useState(false)
     const [customFrom, setCustomFrom] = useState('')
     const [customTo, setCustomTo] = useState('')
     const [error, setError] = useState('')
@@ -21,17 +23,35 @@ export function DashboardFilter() {
 
         if (preset) {
             setSelectedPreset(preset)
-            setShowCustom(false)
+            if (preset === 'custom' && from && to) {
+                setCustomFrom(from)
+                setCustomTo(to)
+            }
         } else if (from && to) {
             setSelectedPreset('custom')
-            setShowCustom(true)
             setCustomFrom(from)
             setCustomTo(to)
+        } else {
+            // Default
+            setSelectedPreset('next_30')
         }
     }, [searchParams])
 
-    // Format Date to YYYY-MM-DD using Local Time
-    // prevents timezone shifts (e.g. UTC-1 resulting in previous day)
+    // Close on click outside
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
+                setIsOpen(false)
+            }
+        }
+        if (isOpen) {
+            document.addEventListener('mousedown', handleClickOutside)
+        }
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside)
+        }
+    }, [isOpen])
+
     const formatDateLocal = (date: Date) => {
         const year = date.getFullYear()
         const month = String(date.getMonth() + 1).padStart(2, '0')
@@ -39,133 +59,161 @@ export function DashboardFilter() {
         return `${year}-${month}-${day}`
     }
 
-    const applyPreset = (preset: string) => {
-        setSelectedPreset(preset)
-        if (preset === 'custom') {
-            setShowCustom(true)
-            return
-        }
-        setShowCustom(false)
+    const applyFilter = (preset: string, fromDate?: string, toDate?: string) => {
         setError('')
+        const params = new URLSearchParams(searchParams)
 
-        const now = new Date()
-        let from = new Date()
-        let to = new Date()
+        if (preset !== 'custom') {
+            const now = new Date()
+            let from = new Date(now)
+            let to = new Date(now)
 
-        // Reset hours to avoid time drift implications during calculation
-        // though we allow new Date() to keep current time for 'next_30/7' logic if strict 24h cycle desired
-        // but for 'months' we want start of day.
+            switch (preset) {
+                case 'next_30':
+                    to.setDate(to.getDate() + 30)
+                    break
+                case 'next_7':
+                    to.setDate(to.getDate() + 7)
+                    break
+                case 'this_month':
+                    from = new Date(now.getFullYear(), now.getMonth(), 1)
+                    to = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+                    break
+                case 'last_month':
+                    from = new Date(now.getFullYear(), now.getMonth() - 1, 1) // 1st of last month
+                    to = new Date(now.getFullYear(), now.getMonth(), 0) // Last day of last month
+                    break
+                case 'last_3_months':
+                    from = new Date(now.getFullYear(), now.getMonth() - 2, 1)
+                    to = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+                    break
+            }
 
-        switch (preset) {
-            case 'next_30':
-                // Today to +30 days
-                from = new Date(now)
-                to = new Date(now)
-                to.setDate(to.getDate() + 30)
-                break
-
-            case 'next_7':
-                // Today to +7 days
-                from = new Date(now)
-                to = new Date(now)
-                to.setDate(to.getDate() + 7)
-                break
-
-            case 'this_month':
-                // 1st of current month to Last day of current month
-                from = new Date(now.getFullYear(), now.getMonth(), 1)
-                to = new Date(now.getFullYear(), now.getMonth() + 1, 0)
-                break
-
-            case 'last_month':
-                // 1st of previous month to Last day of previous month
-                from = new Date(now.getFullYear(), now.getMonth() - 1, 1)
-                to = new Date(now.getFullYear(), now.getMonth(), 0)
-                break
-
-            case 'last_3_months':
-                // 1st of (M-2) to Last day of Current Month?
-                // OR Last 3 COMPLETED months? 
-                // Context "Last 3 Months" in dashboards usually means "Trailing 3 Months including current" or "Last 90 days".
-                // Let's stick to "Start of 2 months ago" to "End of current month" (Approx 3 month window: M-2, M-1, M)
-                from = new Date(now.getFullYear(), now.getMonth() - 2, 1)
-                to = new Date(now.getFullYear(), now.getMonth() + 1, 0)
-                break
+            params.set('from', formatDateLocal(from))
+            params.set('to', formatDateLocal(to))
+            params.set('preset', preset)
+        } else {
+            if (!fromDate || !toDate) {
+                setError('Please select both dates')
+                return
+            }
+            if (fromDate > toDate) {
+                setError('Start date cannot be after End date')
+                return
+            }
+            params.set('from', fromDate)
+            params.set('to', toDate)
+            params.set('preset', 'custom')
         }
 
-        const fromStr = formatDateLocal(from)
-        const toStr = formatDateLocal(to)
-
-        router.push(`?from=${fromStr}&to=${toStr}&preset=${preset}`)
+        router.push(`?${params.toString()}`)
+        setIsOpen(false)
     }
 
-    const applyCustom = () => {
-        if (!customFrom || !customTo) {
-            setError('Please select both dates')
-            return
-        }
-        if (customFrom > customTo) {
-            setError('Start date cannot be after End date')
-            return
-        }
-        setError('')
-        router.push(`?from=${customFrom}&to=${customTo}&preset=custom`)
+    const handleReset = () => {
+        router.push('/dashboard')
+        setIsOpen(false)
+        setSelectedPreset('next_30')
+        setCustomFrom('')
+        setCustomTo('')
+    }
+
+    const presetLabels: Record<string, string> = {
+        next_30: 'Next 30 Days',
+        next_7: 'Next 7 Days',
+        this_month: 'This Month',
+        last_month: 'Last Month',
+        last_3_months: 'Last 3 Months',
+        custom: 'Custom Range',
     }
 
     return (
-        <div className="flex flex-col gap-2 p-4 bg-white dark:bg-zinc-900 rounded-lg border border-border">
-            <div className="flex flex-wrap gap-2">
-                {[
-                    { id: 'next_30', label: 'Next 30 Days' },
-                    { id: 'next_7', label: 'Next 7 Days' },
-                    { id: 'this_month', label: 'This Month' },
-                    { id: 'last_month', label: 'Last Month' },
-                    { id: 'last_3_months', label: 'Last 3 Months' },
-                    { id: 'custom', label: 'Custom Range 📅' },
-                ].map((p) => (
-                    <button
-                        key={p.id}
-                        onClick={() => applyPreset(p.id)}
-                        className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${selectedPreset === p.id
-                                ? 'bg-primary text-primary-foreground'
-                                : 'bg-secondary hover:bg-secondary/80 text-secondary-foreground'
-                            }`}
-                    >
-                        {p.label}
-                    </button>
-                ))}
-            </div>
+        <div className="relative" ref={popoverRef}>
+            <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-card border border-border rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-accent transition-colors text-sm font-medium"
+            >
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <span>{presetLabels[selectedPreset] || 'Select Date Range'}</span>
+                <ChevronDown className="h-4 w-4 text-muted-foreground ml-2" />
+            </button>
 
-            {showCustom && (
-                <div className="flex items-end gap-2 mt-2 animate-in slide-in-from-top-2 fade-in">
-                    <div>
-                        <label className="text-xs text-muted-foreground block mb-1">From</label>
-                        <input
-                            type="date"
-                            value={customFrom}
-                            onChange={(e) => setCustomFrom(e.target.value)}
-                            className="text-sm p-1.5 rounded border border-input bg-background"
-                        />
+            {isOpen && (
+                <div className="absolute right-0 top-full mt-2 w-80 p-4 bg-white dark:bg-card border border-border rounded-xl shadow-xl z-50 animate-in fade-in zoom-in-95 duration-200">
+                    <div className="flex justify-between items-center mb-4">
+                        <h3 className="font-semibold text-sm">Date Range</h3>
+                        <button onClick={() => setIsOpen(false)} className="text-muted-foreground hover:text-foreground">
+                            <X className="h-4 w-4" />
+                        </button>
                     </div>
-                    <div>
-                        <label className="text-xs text-muted-foreground block mb-1">To</label>
-                        <input
-                            type="date"
-                            value={customTo}
-                            onChange={(e) => setCustomTo(e.target.value)}
-                            className="text-sm p-1.5 rounded border border-input bg-background"
-                        />
+
+                    <div className="grid grid-cols-2 gap-2 mb-4">
+                        {['next_30', 'next_7', 'this_month', 'last_month', 'last_3_months'].map((preset) => (
+                            <button
+                                key={preset}
+                                onClick={() => applyFilter(preset)}
+                                className={`px-3 py-2 text-xs font-medium rounded-md border transition-all
+                                    ${selectedPreset === preset && selectedPreset !== 'custom'
+                                        ? 'bg-primary text-primary-foreground border-primary'
+                                        : 'bg-background hover:bg-secondary border-input'
+                                    }`}
+                            >
+                                {presetLabels[preset]}
+                            </button>
+                        ))}
                     </div>
-                    <button
-                        onClick={applyCustom}
-                        className="px-4 py-1.5 bg-black text-white dark:bg-white dark:text-black text-sm rounded font-medium hover:opacity-90"
-                    >
-                        Apply
-                    </button>
+
+                    <div className="border-t border-border pt-4">
+                        <p className="text-xs font-medium mb-2 text-muted-foreground uppercase tracking-wider">Custom Range</p>
+                        <div className="grid grid-cols-2 gap-2 mb-3">
+                            <div>
+                                <label className="text-[10px] text-muted-foreground block mb-1">From</label>
+                                <input
+                                    type="date"
+                                    value={customFrom}
+                                    onChange={(e) => {
+                                        setCustomFrom(e.target.value)
+                                        setSelectedPreset('custom')
+                                    }}
+                                    className="w-full text-xs p-2 rounded-md border border-input bg-background focus:ring-1 focus:ring-primary"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-[10px] text-muted-foreground block mb-1">To</label>
+                                <input
+                                    type="date"
+                                    value={customTo}
+                                    onChange={(e) => {
+                                        setCustomTo(e.target.value)
+                                        setSelectedPreset('custom')
+                                    }}
+                                    className="w-full text-xs p-2 rounded-md border border-input bg-background focus:ring-1 focus:ring-primary"
+                                />
+                            </div>
+                        </div>
+                        {error && <p className="text-xs text-red-500 mb-2">{error}</p>}
+
+                        <div className="flex gap-2">
+                            <button
+                                onClick={handleReset}
+                                className="flex-1 px-3 py-2 text-xs font-medium rounded-md border border-input hover:bg-secondary transition-colors"
+                            >
+                                Reset
+                            </button>
+                            <button
+                                onClick={() => applyFilter('custom', customFrom, customTo)}
+                                className={`flex-1 px-3 py-2 text-xs font-medium rounded-md transition-colors
+                                    ${selectedPreset === 'custom'
+                                        ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                                        : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                                    }`}
+                            >
+                                Apply
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
-
-            {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
         </div>
     )
 }

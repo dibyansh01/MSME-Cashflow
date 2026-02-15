@@ -57,6 +57,7 @@ export default async function DashboardPage({
         </div>
 
         <div className="flex items-center gap-3">
+          <DashboardFilter />
           <ThemeToggle />
         </div>
       </div>
