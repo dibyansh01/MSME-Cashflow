@@ -1,6 +1,7 @@
 'use server'
 
 import { prisma } from '@/lib/db/prisma'
+import { calculateGstAmounts } from '@/lib/utils/invoice'
 import { revalidatePath } from 'next/cache'
 
 export type ExpenseFormState = {
@@ -26,7 +27,18 @@ export async function createExpense(
   try {
     const expenseDate = new Date(expenseDateStr)
     const vendorId = vendorIdRaw || null
-    const amount = Number(amountRaw)
+
+    const amountEntered = Number(amountRaw)
+    const isGstInclusive = formData.get('isGstInclusive') === 'true'
+    const isGstEligible = formData.get('isGstEligible') === 'true'
+    const gstRateStr = formData.get('gstRate') as string
+    const gstRate = gstRateStr ? Number(gstRateStr) : null
+
+    const { baseAmount: amount, gstAmount } = calculateGstAmounts({
+      amountEntered: amountEntered,
+      gstRate,
+      isGstInclusive
+    })
 
     await prisma.expense.create({
       data: {
@@ -34,6 +46,10 @@ export async function createExpense(
         categoryId,
         vendorId,
         amount,
+        gstAmount,
+        gstRate,
+        isGstInclusive,
+        isGstEligible,
         paymentMode,
         notes: notes || null,
       },

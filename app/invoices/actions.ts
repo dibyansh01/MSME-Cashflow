@@ -1,7 +1,7 @@
 'use server'
 
 import { prisma } from '@/lib/db/prisma'
-import { calculateInvoiceAmounts } from '@/lib/utils/invoice'
+import { calculateGstAmounts } from '@/lib/utils/invoice'
 import { revalidatePath } from 'next/cache'
 
 export type InvoiceFormState = {
@@ -27,7 +27,7 @@ export async function createInvoice(prevState: InvoiceFormState, formData: FormD
   const paidAmount = Number(paidAmountStr)
   const gstRate = gstRateStr ? Number(gstRateStr) : null
 
-  const { invoiceAmount, gstAmount, outstandingAmount: totalAmount } = calculateInvoiceAmounts({
+  const { baseAmount: invoiceAmount, gstAmount, totalAmount } = calculateGstAmounts({
     amountEntered: invoiceAmountEntered,
     gstRate,
     isGstInclusive

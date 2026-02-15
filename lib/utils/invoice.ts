@@ -1,5 +1,5 @@
 
-export function calculateInvoiceAmounts({
+export function calculateGstAmounts({
   amountEntered,
   gstRate,
   isGstInclusive,
@@ -8,27 +8,23 @@ export function calculateInvoiceAmounts({
   gstRate?: number | null
   isGstInclusive: boolean
 }) {
-  let invoiceAmount = amountEntered
+  let baseAmount = amountEntered
   let gstAmount = 0
-  let outstandingAmount = amountEntered
+  let totalAmount = amountEntered
 
   if (!gstRate) {
-    return { invoiceAmount, gstAmount: 0, outstandingAmount }
+    return { baseAmount, gstAmount: 0, totalAmount }
   }
 
   if (!isGstInclusive) {
     gstAmount = amountEntered * (gstRate / 100)
-    outstandingAmount = amountEntered + gstAmount
-    return { invoiceAmount, gstAmount, outstandingAmount }
+    totalAmount = amountEntered + gstAmount
+    return { baseAmount: amountEntered, gstAmount, totalAmount }
   }
 
   // GST Inclusive
-  const baseAmount = amountEntered / (1 + gstRate / 100)
+  baseAmount = amountEntered / (1 + gstRate / 100)
   gstAmount = amountEntered - baseAmount
 
-  return {
-    invoiceAmount: baseAmount,
-    gstAmount,
-    outstandingAmount: amountEntered,
-  }
+  return { baseAmount, gstAmount, totalAmount: amountEntered }
 }

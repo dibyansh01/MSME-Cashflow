@@ -4,7 +4,7 @@ import { useFormState } from 'react-dom'
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { createInvoice, type InvoiceFormState } from '../actions'
-import { calculateInvoiceAmounts } from '@/lib/utils/invoice'
+import { calculateGstAmounts } from '@/lib/utils/invoice'
 
 export default function InvoiceForm({ customers }: { customers: { id: string; name: string }[] }) {
     const initialState: InvoiceFormState = {
@@ -21,10 +21,10 @@ export default function InvoiceForm({ customers }: { customers: { id: string; na
     const [isGstInclusive, setIsGstInclusive] = useState<boolean>(false)
 
     const {
-        invoiceAmount: calculatedBaseAmount,
+        baseAmount: calculatedBaseAmount,
         gstAmount,
-        outstandingAmount: totalAmount
-    } = calculateInvoiceAmounts({
+        totalAmount
+    } = calculateGstAmounts({
         amountEntered: Number(baseAmount) || 0,
         gstRate,
         isGstInclusive

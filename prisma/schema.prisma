@@ -130,7 +130,11 @@ model Expense {
   vendorId    String?
   categoryId  String
   expenseDate DateTime
-  amount      Float
+  amount      Float   // Base expense amount
+  gstAmount     Float?
+  gstRate       Float?
+  isGstInclusive Boolean @default(false)
+  isGstEligible  Boolean @default(false)
   paymentMode String   // CASH, BANK, UPI
   notes       String?
   createdAt   DateTime @default(now())
@@ -151,7 +155,11 @@ model VendorInvoice {
   invoiceDate       DateTime
   dueDate           DateTime
 
-  invoiceAmount     Float
+  invoiceAmount     Float    // Base amount (excluding GST)
+  gstAmount         Float?
+  gstRate           Float?
+  isGstInclusive    Boolean  @default(false)
+  isGstEligible     Boolean  @default(true)
   paidAmount        Float    @default(0)
   outstandingAmount Float
 
