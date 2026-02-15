@@ -31,6 +31,7 @@ const navGroups = [
         title: 'Overview',
         items: [
             { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+            { name: 'Cash Flow', href: '/cash-flow', icon: PieChart },
         ]
     },
     {
@@ -97,8 +98,8 @@ export function Sidebar({ isOpen, isCollapsed, toggleSidebar, setIsCollapsed }: 
                             {/* Full logo */}
                             <span
                                 className={cn(
-                                "text-white font-bold whitespace-nowrap text-2xl",
-                                isCollapsed ? "hidden" : "block"
+                                    "text-white font-bold whitespace-nowrap text-2xl",
+                                    isCollapsed ? "hidden" : "block"
                                 )}
                             >
                                 CashFlow
@@ -107,13 +108,13 @@ export function Sidebar({ isOpen, isCollapsed, toggleSidebar, setIsCollapsed }: 
                             {/* Collapsed logo */}
                             <span
                                 className={cn(
-                                "absolute left-1/2 -translate-x-1/2 text-white font-extrabold text-xl",
-                                isCollapsed ? "block" : "hidden"
+                                    "absolute left-1/2 -translate-x-1/2 text-white font-extrabold text-xl",
+                                    isCollapsed ? "block" : "hidden"
                                 )}
                             >
                                 CF
                             </span>
-                            </div>
+                        </div>
                     </Link>
                     {!isCollapsed && (
                         <button onClick={toggleSidebar} className="2xl:hidden text-white hover:text-orange-500">
