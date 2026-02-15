@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useState, useEffect, useRef } from 'react'
 import { Calendar, ChevronDown, X } from 'lucide-react'
 
-export function DashboardFilter() {
+export function DashboardFilter({ resetPath = '/dashboard' }: { resetPath?: string }) {
     const router = useRouter()
     const searchParams = useSearchParams()
     const [isOpen, setIsOpen] = useState(false)
@@ -84,6 +84,14 @@ export function DashboardFilter() {
                     to = new Date(now.getFullYear(), now.getMonth(), 0) // Last day of last month
                     break
                 case 'last_3_months':
+                    from = new Date(now.getFullYear(), now.getMonth() - 2, 1) // Go back 2 more months from current = last 3 months
+                    // Actually usually 'last_3_months' means (Today - 3 months) to Today? 
+                    // Or "Previous 3 calendar months"?
+                    // Current implementation: now.getMonth() - 2 is start of 3 months ago?
+                    // Let's stick to existing logic to avoid regression, but ensure it captures backward data if that's the intent.
+                    // GST is retrospective. Future dates ("next_30") are less useful.
+                    // For GST we want "Last 3 Months", "This Financial Year", etc.
+                    // But for reuse, keep as is.
                     from = new Date(now.getFullYear(), now.getMonth() - 2, 1)
                     to = new Date(now.getFullYear(), now.getMonth() + 1, 0)
                     break
@@ -111,7 +119,7 @@ export function DashboardFilter() {
     }
 
     const handleReset = () => {
-        router.push('/dashboard')
+        router.push(resetPath)
         setIsOpen(false)
         setSelectedPreset('next_30')
         setCustomFrom('')

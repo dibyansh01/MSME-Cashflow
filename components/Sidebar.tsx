@@ -32,6 +32,7 @@ const navGroups = [
         items: [
             { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
             { name: 'Cash Flow', href: '/cash-flow', icon: PieChart },
+            { name: 'GST Insights', href: '/gst-analytics', icon: FileText },
         ]
     },
     {
@@ -142,6 +143,11 @@ export function Sidebar({ isOpen, isCollapsed, toggleSidebar, setIsCollapsed }: 
                             <div className="space-y-1">
                                 {group.items.map((item) => {
                                     const isActive = pathname.startsWith(item.href)
+                                    // Special case for dashboard to match exact path or just /dashboard
+                                    const isItemActive = item.href === '/dashboard'
+                                        ? pathname === '/dashboard'
+                                        : pathname.startsWith(item.href)
+
                                     return (
                                         <Link
                                             key={item.href}
@@ -149,14 +155,14 @@ export function Sidebar({ isOpen, isCollapsed, toggleSidebar, setIsCollapsed }: 
                                             title={isCollapsed ? item.name : undefined}
                                             className={cn(
                                                 'flex items-center gap-4 px-4 py-3 text-[15px] font-medium rounded-xl transition-all duration-200 whitespace-nowrap group relative overflow-hidden',
-                                                isActive
+                                                isItemActive
                                                     ? '!bg-[#ea580c] !text-white shadow-lg shadow-orange-900/20'
                                                     : '!text-[#f1f5f9] hover:bg-[#1e293b] hover:text-white',
                                                 isCollapsed && 'justify-center px-0 w-12 h-12 mx-auto rounded-lg'
                                             )}
                                             style={{
-                                                backgroundColor: isActive ? '#ea580c' : undefined,
-                                                color: isActive ? '#ffffff' : '#f1f5f9'
+                                                backgroundColor: isItemActive ? '#ea580c' : undefined,
+                                                color: isItemActive ? '#ffffff' : '#f1f5f9'
                                             }}
                                         >
                                             <item.icon className={cn("transition-transform duration-300 shrink-0", isCollapsed ? "h-6 w-6" : "h-5 w-5", isActive && !isCollapsed && "scale-110")} />

@@ -353,6 +353,40 @@ export async function getDashboardData(range?: DateRange) {
     // 4. Net GST Payable
     const netGstPayable = gstCollected - gstPaidClaimable;
 
+    // ============================================
+    // 7. GST CASHFLOW INSIGHTS (PHASE 2)
+    // ============================================
+
+    // 5. GST Cash Blocked (From Customer Invoices)
+    // Logic: (gstAmount / (invoiceAmount + gstAmount)) * outstandingAmount
+    let gstCashBlocked = 0;
+    for (const inv of invoices) {
+        // Only consider invoices with GST and Outstanding > 0
+        if (inv.gstAmount && inv.gstAmount > 0 && inv.outstandingAmount > 0) {
+            const totalInvAmount = inv.invoiceAmount + inv.gstAmount;
+            if (totalInvAmount > 0) {
+                const gstRatio = inv.gstAmount / totalInvAmount;
+                gstCashBlocked += (gstRatio * inv.outstandingAmount);
+            }
+        }
+    }
+
+    // 6. GST Credit Pending (From Vendor Invoices)
+    // Logic: SUM(gstAmount) where outstanding > 0 and eligible
+    // We need to iterate over 'vendorInvoices' fetched earlier (Variable 'vendorInvoices' from Section 3)
+    // Check if 'vendorInvoices' from Section 3 SELECTS gstAmount!
+    // In Section 3, we did: const vendorInvoices = await prisma.vendorInvoice.findMany(...) without select, so it has all fields.
+    // However, Prisma types might be tricky if we don't ensure it references the model correctly.
+    // Let's assume 'vendorInvoices' has gstAmount.
+
+    let gstCreditPending = 0;
+    for (const vinv of vendorInvoices) {
+        if (vinv.outstandingAmount > 0 && vinv.isGstEligible && vinv.gstAmount && vinv.gstAmount > 0) {
+            gstCreditPending += vinv.gstAmount;
+        }
+    }
+
+
     return {
         snapshot: {
             totalInvoiced,
@@ -386,7 +420,10 @@ export async function getDashboardData(range?: DateRange) {
             gstCollected,
             gstPaidClaimable,
             gstPaidNonClaimable,
-            netGstPayable
+            netGstPayable,
+            // Phase 2
+            gstCashBlocked,
+            gstCreditPending
         }
     };
 }

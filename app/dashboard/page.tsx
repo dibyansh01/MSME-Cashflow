@@ -168,6 +168,32 @@ export default async function DashboardPage({
         />
       </div>
 
+      {/* GST CASHFLOW INSIGHTS */}
+      <div className="space-y-4">
+        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+          GST Cashflow Insights
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* 5. GST Cash Blocked */}
+          <StatCard
+            title="GST Cash Blocked"
+            value={`₹${Math.round(data.gstStats.gstCashBlocked).toLocaleString()}`}
+            color="danger"
+            tooltip="GST charged on invoices where customers have not paid yet. This GST is stuck until you receive the payment."
+            subtext="Linked to unpaid customer invoices"
+          />
+
+          {/* 6. GST Credit Pending */}
+          <StatCard
+            title="GST Credit Pending"
+            value={`₹${data.gstStats.gstCreditPending.toLocaleString()}`}
+            color="warning"
+            tooltip="GST you can claim only after paying pending vendor bills. Clearing vendor dues may unlock this GST credit."
+            subtext="Linked to unpaid vendor invoices"
+          />
+        </div>
+      </div>
+
 
 
       {/* SECTION 5: OPERATIONAL INTELLIGENCE */}
