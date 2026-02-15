@@ -1,6 +1,7 @@
 'use server'
 
 import { prisma } from '@/lib/db/prisma'
+import { calculateInvoiceAmounts } from '@/lib/utils/invoice'
 import { revalidatePath } from 'next/cache'
 
 export type InvoiceFormState = {
@@ -21,13 +22,16 @@ export async function createInvoice(prevState: InvoiceFormState, formData: FormD
     return { error: 'Missing required fields' }
   }
 
-  const invoiceAmount = Number(invoiceAmountStr)
+  const isGstInclusive = formData.get('isGstInclusive') === 'true'
+  const invoiceAmountEntered = Number(invoiceAmountStr)
   const paidAmount = Number(paidAmountStr)
   const gstRate = gstRateStr ? Number(gstRateStr) : null
-  const gstAmount = gstAmountStr ? Number(gstAmountStr) : null
 
-  // Total invoice value including GST
-  const totalAmount = invoiceAmount + (gstAmount || 0)
+  const { invoiceAmount, gstAmount, outstandingAmount: totalAmount } = calculateInvoiceAmounts({
+    amountEntered: invoiceAmountEntered,
+    gstRate,
+    isGstInclusive
+  })
 
   if (paidAmount > totalAmount) {
     return { error: 'Paid amount cannot be greater than total invoice amount' }
@@ -63,6 +67,7 @@ export async function createInvoice(prevState: InvoiceFormState, formData: FormD
         invoiceAmount,
         gstRate,
         gstAmount,
+        isGstInclusive,
         paidAmount,
         outstandingAmount,
         status,

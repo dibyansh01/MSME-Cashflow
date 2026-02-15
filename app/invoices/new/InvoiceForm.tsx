@@ -4,6 +4,7 @@ import { useFormState } from 'react-dom'
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { createInvoice, type InvoiceFormState } from '../actions'
+import { calculateInvoiceAmounts } from '@/lib/utils/invoice'
 
 export default function InvoiceForm({ customers }: { customers: { id: string; name: string }[] }) {
     const initialState: InvoiceFormState = {
@@ -17,15 +18,24 @@ export default function InvoiceForm({ customers }: { customers: { id: string; na
     // State for GST calculation
     const [baseAmount, setBaseAmount] = useState<number | ''>('')
     const [gstRate, setGstRate] = useState<number>(0)
+    const [isGstInclusive, setIsGstInclusive] = useState<boolean>(false)
 
-    const gstAmount = baseAmount && gstRate ? (Number(baseAmount) * gstRate) / 100 : 0
-    const totalAmount = (Number(baseAmount) || 0) + gstAmount
+    const {
+        invoiceAmount: calculatedBaseAmount,
+        gstAmount,
+        outstandingAmount: totalAmount
+    } = calculateInvoiceAmounts({
+        amountEntered: Number(baseAmount) || 0,
+        gstRate,
+        isGstInclusive
+    })
 
     useEffect(() => {
         if (state.success) {
             formRef.current?.reset()
             setBaseAmount('')
             setGstRate(0)
+            setIsGstInclusive(false)
         }
     }, [state.success])
 
@@ -105,41 +115,65 @@ export default function InvoiceForm({ customers }: { customers: { id: string; na
                 </div>
 
                 {/* GST Section */}
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium mb-1">
-                            GST Rate
-                        </label>
+                <div className="space-y-4">
+                    <div className="flex items-center gap-2">
                         <input
-                            type="number"
-                            name="gstRate"
-                            className="border p-2 w-full rounded"
-                            value={gstRate}
-                            onChange={(e) => {
-                                const value = Number(e.target.value);
-                                if (value >= 0 && value <= 99 && Number.isInteger(value)) {
-                                    setGstRate(value);
-                                }
-                            }}
-                            min="0"
-                            max="99"
-                            step="1"
-                            pattern="[0-9]*"
+                            type="checkbox"
+                            id="isGstInclusive"
+                            checked={isGstInclusive}
+                            onChange={(e) => setIsGstInclusive(e.target.checked)}
+                            className="w-4 h-4 text-black border-gray-300 rounded focus:ring-black"
                         />
+                        <label htmlFor="isGstInclusive" className="text-sm font-medium text-gray-700 select-none">
+                            Amount includes GST
+                        </label>
+                        <input type="hidden" name="isGstInclusive" value={String(isGstInclusive)} />
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-medium mb-1">
-                            GST Amount
-                        </label>
-                        <input
-                            name="gstAmount"
-                            type="number"
-                            step="0.01"
-                            readOnly
-                            className="border p-2 w-full rounded bg-gray-100 text-gray-600 cursor-not-allowed"
-                            value={gstAmount.toFixed(2)}
-                        />
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium mb-1">
+                                GST Rate (%)
+                            </label>
+                            <input
+                                type="number"
+                                name="gstRate"
+                                className="border p-2 w-full rounded"
+                                value={gstRate}
+                                onChange={(e) => {
+                                    const value = Number(e.target.value);
+                                    if (value >= 0 && value <= 99 && Number.isInteger(value)) {
+                                        setGstRate(value);
+                                    }
+                                }}
+                                min="0"
+                                max="99"
+                                step="1"
+                                pattern="[0-9]*"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium mb-1">
+                                GST Amount
+                            </label>
+                            <input
+                                name="gstAmount"
+                                type="number"
+                                step="0.01"
+                                readOnly
+                                className="border p-2 w-full rounded bg-gray-100 text-gray-600 cursor-not-allowed"
+                                value={gstAmount.toFixed(2)}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 text-sm text-gray-600 bg-gray-100 p-3 rounded">
+                        <div>Base Amount:</div>
+                        <div className="text-right font-medium">₹{calculatedBaseAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+
+                        <div>GST ({gstRate}%):</div>
+                        <div className="text-right font-medium">₹{gstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                     </div>
                 </div>
 
