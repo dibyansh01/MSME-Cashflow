@@ -229,6 +229,80 @@ export async function getDashboardData(range?: DateRange) {
     const riskSummary = await getCustomerRiskSummary();
     const highRiskCustomers = riskSummary.filter((c) => c.risk === 'HIGH');
 
+    // ============================================
+    // 6. GST INSIGHTS (NEW)
+    // ============================================
+
+    // 1. GST Collected (Output GST) -> From Sales Invoices
+    const gstCollectedAgg = await prisma.invoice.aggregate({
+        _sum: { gstAmount: true },
+        where: {
+            invoiceDate: {
+                gte: fromStartOfDay,
+                lte: toEndOfDay
+            },
+            gstAmount: { not: null }
+        }
+    });
+    const gstCollected = gstCollectedAgg._sum.gstAmount || 0;
+
+    // 2. GST Paid (Input GST) -> Vendor Invoices + Expenses
+
+    // Vendor Invoices
+    // fetching all to aggregate in JS to avoid TS groupBy issues with optional fields
+    const vendorInvoicesGst = await prisma.vendorInvoice.findMany({
+        where: {
+            invoiceDate: {
+                gte: fromStartOfDay,
+                lte: toEndOfDay
+            },
+            gstAmount: { not: null }
+        },
+        select: {
+            gstAmount: true,
+            isGstEligible: true
+        }
+    });
+
+    // Expenses
+    const expensesGst = await prisma.expense.findMany({
+        where: {
+            expenseDate: {
+                gte: fromStartOfDay,
+                lte: toEndOfDay
+            },
+            gstAmount: { not: null }
+        },
+        select: {
+            gstAmount: true,
+            isGstEligible: true
+        }
+    });
+
+    let gstPaidClaimable = 0;
+    let gstPaidNonClaimable = 0;
+
+    // Process Vendor Invoices
+    for (const inv of vendorInvoicesGst) {
+        if (inv.isGstEligible) {
+            gstPaidClaimable += (inv.gstAmount || 0);
+        } else {
+            gstPaidNonClaimable += (inv.gstAmount || 0);
+        }
+    }
+
+    // Process Expenses
+    for (const exp of expensesGst) {
+        if (exp.isGstEligible) {
+            gstPaidClaimable += (exp.gstAmount || 0);
+        } else {
+            gstPaidNonClaimable += (exp.gstAmount || 0);
+        }
+    }
+
+    // 4. Net GST Payable
+    const netGstPayable = gstCollected - gstPaidClaimable;
+
     return {
         snapshot: {
             totalInvoiced,
@@ -257,6 +331,12 @@ export async function getDashboardData(range?: DateRange) {
             highRiskCustomers,
             agingBuckets,
             topDefaulters
+        },
+        gstStats: {
+            gstCollected,
+            gstPaidClaimable,
+            gstPaidNonClaimable,
+            netGstPayable
         }
     };
 }

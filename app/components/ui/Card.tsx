@@ -9,8 +9,8 @@ interface CardProps {
 export function Card({ children, className = '', title }: CardProps) {
     return (
         <div className={`
-      relative overflow-hidden rounded-2xl
-      bg-card backdrop-blur-md border border-card-border
+      relative rounded-2xl
+      bg-card border border-card-border
       shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)]
       transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:hover:shadow-[0_8px_30px_rgb(0,0,0,0.3)]
       ${className}

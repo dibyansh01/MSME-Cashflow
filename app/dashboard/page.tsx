@@ -128,6 +128,45 @@ export default async function DashboardPage({
         </div>
       </div>
 
+      {/* SECTION 3: GST SNAPSHOT */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* 1. GST Collected */}
+        <StatCard
+          title="GST Collected"
+          value={`₹${data.gstStats.gstCollected.toLocaleString()}`}
+          color="info"
+          tooltip="GST charged to your customers on sales invoices during the selected period. This amount may need to be paid to the government."
+          subtext="From Sales Invoices"
+        />
+
+        {/* 2. GST Paid (Claimable) */}
+        <StatCard
+          title="GST Paid (Claimable)"
+          value={`₹${data.gstStats.gstPaidClaimable.toLocaleString()}`}
+          color="success"
+          tooltip="GST you paid on purchases and expenses that can be claimed back while filing GST."
+          subtext="Input Tax Credit (ITC)"
+        />
+
+        {/* 3. GST Paid (Not Claimable) */}
+        <StatCard
+          title="GST Paid (Block)"
+          value={`₹${data.gstStats.gstPaidNonClaimable.toLocaleString()}`}
+          color="gray"
+          tooltip="GST paid on expenses where credit is not allowed. This becomes part of your business cost."
+          subtext="Non-recoverable cost"
+        />
+
+        {/* 4. Net GST Payable */}
+        <StatCard
+          title="Net GST Payable"
+          value={data.gstStats.netGstPayable > 0 ? `₹${data.gstStats.netGstPayable.toLocaleString()}` : "No GST due"}
+          color={data.gstStats.netGstPayable > 0 ? "warning" : "success"}
+          tooltip="Estimated GST amount you may need to pay after adjusting eligible GST credits."
+          subtext={data.gstStats.netGstPayable > 0 ? "Liability" : "Credit Balance"}
+        />
+      </div>
+
 
 
       {/* SECTION 5: OPERATIONAL INTELLIGENCE */}
