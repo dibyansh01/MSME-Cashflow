@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useSession, signOut } from 'next-auth/react'
 import {
     LayoutDashboard,
     FileText,
@@ -62,6 +63,7 @@ const navGroups = [
 
 export function Sidebar({ isOpen, isCollapsed, toggleSidebar, setIsCollapsed }: SidebarProps) {
     const pathname = usePathname()
+    const { data: session } = useSession()
 
     return (
         <>
@@ -220,11 +222,15 @@ export function Sidebar({ isOpen, isCollapsed, toggleSidebar, setIsCollapsed }: 
                             U
                         </div>
                         <div className={cn("transition-all duration-300 overflow-hidden whitespace-nowrap", isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100 flex-1')}>
-                            <p className="font-semibold text-white text-sm">User Name</p>
-                            <p className="text-xs text-[#cbd5e1] truncate max-w-[140px]">user@example.com</p>
+                            <p className="font-semibold text-white text-sm">{session?.user?.name || 'User Name'}</p>
+                            <p className="text-xs text-[#cbd5e1] truncate max-w-[140px]">{session?.user?.email || 'user@example.com'}</p>
                         </div>
                         {!isCollapsed && (
-                            <button className="text-[#cbd5e1] hover:text-white transition-colors p-1.5 rounded-lg hover:bg-[#334155]">
+                            <button
+                                onClick={() => signOut()}
+                                className="text-[#cbd5e1] hover:text-white transition-colors p-1.5 rounded-lg hover:bg-[#334155]"
+                                title="Sign out"
+                            >
                                 <LogOut className="h-4 w-4" />
                             </button>
                         )}
