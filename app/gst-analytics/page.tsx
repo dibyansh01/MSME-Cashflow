@@ -70,14 +70,14 @@ export default async function GstAnalyticsPage({
             >
                 <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className={`p-4 rounded-xl ${SEMANTIC_STYLES.info.wrapper}`}>
-                        <p className={`text-sm font-medium mb-1 ${SEMANTIC_STYLES.info.label}`}>Total Collected (Liability)</p>
-                        <p className={`text-2xl font-bold ${SEMANTIC_STYLES.info.value}`}>
+                        <p className="text-sm font-medium mb-1 !text-blue-900 dark:!text-blue-200">Total Collected (Liability)</p>
+                        <p className="text-2xl font-bold !text-blue-700 dark:!text-blue-300">
                             ₹{data.trendChartData.reduce((acc, curr) => acc + curr.collected, 0).toLocaleString()}
                         </p>
                     </div>
                     <div className={`p-4 rounded-xl ${SEMANTIC_STYLES.success.wrapper}`}>
-                        <p className={`text-sm font-medium mb-1 ${SEMANTIC_STYLES.success.label}`}>Total Paid (Asset/Credit)</p>
-                        <p className={`text-2xl font-bold ${SEMANTIC_STYLES.success.value}`}>
+                        <p className="text-sm font-medium mb-1 !text-green-900 dark:!text-green-200">Total Paid (Asset/Credit)</p>
+                        <p className="text-2xl font-bold !text-green-700 dark:!text-green-300">
                             ₹{data.trendChartData.reduce((acc, curr) => acc + curr.paidClaimable, 0).toLocaleString()}
                         </p>
                     </div>
@@ -101,9 +101,9 @@ export default async function GstAnalyticsPage({
                                         className="w-3 h-3 rounded-full"
                                         style={{ backgroundColor: CHART_PALETTE_MAIN[idx % CHART_PALETTE_MAIN.length] }}
                                     />
-                                    <span className="text-gray-900 dark:text-gray-100 font-semibold">{item.name} Rate</span>
+                                    <span className="font-semibold !text-slate-900 dark:!text-slate-100">{item.name} Rate</span>
                                 </div>
-                                <span className="font-bold text-slate-800 dark:text-slate-200">₹{item.value.toLocaleString()}</span>
+                                <span className="font-bold !text-slate-900 dark:!text-slate-100">₹{item.value.toLocaleString()}</span>
                             </div>
                         ))}
                     </div>
@@ -117,10 +117,10 @@ export default async function GstAnalyticsPage({
                 >
                     <div className={`mb-6 p-4 rounded-lg flex justify-between items-center ${SEMANTIC_STYLES.danger.wrapper}`}>
                         <div>
-                            <h3 className={`font-semibold ${SEMANTIC_STYLES.danger.label}`}>Total GST Leakage</h3>
-                            <p className={`text-xs ${SEMANTIC_STYLES.danger.subtext}`}>Direct impact on profit</p>
+                            <h3 className="font-semibold !text-red-900 dark:!text-red-200">Total GST Leakage</h3>
+                            <p className="text-xs !text-red-800 dark:!text-red-300">Direct impact on profit</p>
                         </div>
-                        <p className={`text-2xl font-bold ${SEMANTIC_STYLES.danger.value}`}>
+                        <p className="text-2xl font-bold !text-red-600 dark:!text-red-400">
                             ₹{data.leakage.totalLeakage.toLocaleString()}
                         </p>
                     </div>

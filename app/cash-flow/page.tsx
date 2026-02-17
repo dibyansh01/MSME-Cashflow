@@ -52,8 +52,8 @@ export default async function CashFlowPage({
                 </div>
             </div>
 
-            <Card className="overflow-hidden">
-                <div className="p-4 border-b border-border bg-secondary/10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <Card className="">
+                <div className="p-4 border-b border-border bg-secondary/10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 rounded-t-2xl">
                     <div>
                         <h3 className="text-lg font-bold">Analysis Overview</h3>
                         <p className="text-sm text-muted-foreground">{periodLabel}</p>

@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   /* Light Mode - Bright, Clean, Professional */
   --background: #ffffff;
@@ -109,4 +111,77 @@ body {
     radial-gradient(circle at 15% 50%, rgba(37, 99, 235, 0.08), transparent 25%),
     radial-gradient(circle at 85% 30%, rgba(14, 165, 233, 0.08), transparent 25%);
   background-attachment: fixed;
+}
+
+/* ── Sidebar height-responsive scaling ── */
+/* Short screens (laptops, small monitors): compact the sidebar */
+@media (max-height: 800px) {
+  .sidebar-nav-item {
+    padding-top: 0.375rem !important;
+    /* py-1.5 */
+    padding-bottom: 0.375rem !important;
+    font-size: 0.8125rem !important;
+    /* ~13px */
+  }
+
+  .sidebar-nav-group {
+    margin-bottom: 0.25rem !important;
+  }
+
+  .sidebar-group-title {
+    font-size: 0.625rem !important;
+    /* 10px */
+    margin-bottom: 0.25rem !important;
+  }
+
+  .sidebar-header {
+    height: 3rem !important;
+    /* 48px instead of 64px */
+  }
+
+  .sidebar-footer {
+    padding: 0.5rem !important;
+  }
+
+  .sidebar-user-avatar {
+    width: 2rem !important;
+    height: 2rem !important;
+    min-width: 2rem !important;
+    font-size: 0.75rem !important;
+  }
+}
+
+/* Very short screens (small laptops, tablets landscape) */
+@media (max-height: 650px) {
+  .sidebar-nav-item {
+    padding-top: 0.25rem !important;
+    /* py-1 */
+    padding-bottom: 0.25rem !important;
+    font-size: 0.75rem !important;
+    /* 12px */
+    gap: 0.5rem !important;
+  }
+
+  .sidebar-nav-group {
+    margin-bottom: 0 !important;
+  }
+
+  .sidebar-group-title {
+    display: none !important;
+  }
+
+  .sidebar-header {
+    height: 2.5rem !important;
+    /* 40px */
+  }
+
+  .sidebar-footer {
+    padding: 0.375rem !important;
+  }
+
+  .sidebar-user-avatar {
+    width: 1.75rem !important;
+    height: 1.75rem !important;
+    min-width: 1.75rem !important;
+  }
 }

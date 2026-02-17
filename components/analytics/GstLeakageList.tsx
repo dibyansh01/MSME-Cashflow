@@ -28,11 +28,11 @@ export function GstLeakageList({ items, type }: GstLeakageListProps) {
                 return (
                     <div key={idx} className="relative group">
                         <div className="flex justify-between items-center mb-1">
-                            <span className={`font-medium text-sm ${isCritical ? 'text-red-700 dark:text-red-300 font-bold' : 'text-slate-700 dark:text-slate-200'}`}>
+                            <span className={`font-medium text-sm ${isCritical ? 'font-bold !text-red-900 dark:!text-red-200' : '!text-slate-900 dark:!text-slate-100'}`}>
                                 {item.name}
-                                {isCritical && <span className="ml-2 text-xs bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full">High</span>}
+                                {isCritical && <span className="ml-2 text-xs bg-red-100 text-red-800 px-1.5 py-0.5 rounded-full font-semibold">High</span>}
                             </span>
-                            <span className="font-bold text-sm text-red-600 dark:text-red-400">
+                            <span className="font-bold text-sm !text-red-600 dark:!text-red-400">
                                 ₹{item.value.toLocaleString()}
                             </span>
                         </div>
@@ -44,7 +44,7 @@ export function GstLeakageList({ items, type }: GstLeakageListProps) {
                                     style={{ width: `${Math.min(item.percentage, 100)}%` }}
                                 />
                             </div>
-                            <span className="text-xs text-gray-500 w-10 text-right font-mono">
+                            <span className="text-xs w-10 text-right font-mono !text-slate-600 dark:!text-slate-400">
                                 {item.percentage.toFixed(1)}%
                             </span>
                         </div>

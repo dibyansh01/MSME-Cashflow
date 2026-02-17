@@ -188,8 +188,11 @@ export default async function VendorInvoicesPage({
               <th className="text-left p-3 font-medium text-muted-foreground">Vendor</th>
               <th className="text-left p-3 font-medium text-muted-foreground">Invoice Date</th>
               <th className="text-left p-3 font-medium text-muted-foreground">Due Date</th>
-              <th className="text-left p-3 font-medium text-muted-foreground">Amount</th>
-              <th className="text-left p-3 font-medium text-muted-foreground">Outstanding</th>
+              <th className="text-right p-3 font-medium text-muted-foreground">Base Amt</th>
+              <th className="text-right p-3 font-medium text-muted-foreground">GST</th>
+              <th className="text-right p-3 font-medium text-muted-foreground">Total</th>
+              <th className="text-right p-3 font-medium text-muted-foreground">Paid</th>
+              <th className="text-right p-3 font-medium text-muted-foreground">Outstanding</th>
               <th className="text-left p-3 font-medium text-muted-foreground">Status</th>
             </tr>
           </thead>
@@ -211,6 +214,8 @@ export default async function VendorInvoicesPage({
                 displayStatus = 'UNPAID'
               }
 
+              const totalAmount = inv.invoiceAmount + (inv.gstAmount || 0);
+
               return (
                 <tr key={inv.id} className="hover:bg-muted/50 transition-colors">
                   <td className="p-3">
@@ -228,10 +233,19 @@ export default async function VendorInvoicesPage({
                   <td className="p-3">
                     {new Date(inv.dueDate).toLocaleDateString()}
                   </td>
-                  <td className="p-3">
+                  <td className="p-3 text-right">
                     ₹{inv.invoiceAmount.toLocaleString()}
                   </td>
-                  <td className="p-3 font-medium">
+                  <td className="p-3 text-right text-muted-foreground">
+                    {inv.gstAmount ? `₹${inv.gstAmount.toLocaleString()}` : '-'}
+                  </td>
+                  <td className="p-3 text-right font-medium">
+                    ₹{totalAmount.toLocaleString()}
+                  </td>
+                  <td className="p-3 text-right text-green-600 dark:text-green-400">
+                    {inv.paidAmount > 0 ? `₹${inv.paidAmount.toLocaleString()}` : '-'}
+                  </td>
+                  <td className="p-3 text-right font-medium text-red-600 dark:text-red-400">
                     ₹{inv.outstandingAmount.toLocaleString()}
                   </td>
                   <td className="p-3">
@@ -253,7 +267,7 @@ export default async function VendorInvoicesPage({
             })}
             {invoices.length === 0 && (
               <tr>
-                <td className="p-8 text-center text-muted-foreground" colSpan={7}>
+                <td className="p-8 text-center text-muted-foreground" colSpan={10}>
                   No vendor invoices found
                 </td>
               </tr>

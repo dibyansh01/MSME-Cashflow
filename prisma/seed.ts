@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { Pool } from 'pg'
 import dotenv from 'dotenv'
+import bcrypt from 'bcrypt'
 
 dotenv.config()
 
@@ -84,6 +85,12 @@ async function main() {
     console.log('Start seeding ...');
 
     // 1. Cleanup existing data (Order matters for foreign keys)
+
+
+    // ... imports
+
+    // ... existing code ...
+
     console.log('Cleaning up old data...');
     // Cash In
     await prisma.paymentEntry.deleteMany({});
@@ -98,7 +105,37 @@ async function main() {
     await prisma.expenseCategory.deleteMany({});
     await prisma.vendor.deleteMany({});
 
+    // Users
+    await prisma.user.deleteMany({});
+
     console.log('Cleared existing data.');
+
+    // 1. Create Users
+    const hashedPassword = await bcrypt.hash('password123', 10);
+
+    await prisma.user.createMany({
+        data: [
+            {
+                name: "Admin User",
+                email: "test@email.com",
+                password: hashedPassword,
+                role: "OWNER"
+            },
+            {
+                name: "Accounts Manager",
+                email: "accounts@msme.com",
+                password: hashedPassword,
+                role: "ACCOUNTS"
+            },
+            {
+                name: "Sales Executive",
+                email: "sales@msme.com",
+                password: hashedPassword,
+                role: "SALES"
+            }
+        ]
+    });
+    console.log('Created test users.');
 
     const customers = [];
 

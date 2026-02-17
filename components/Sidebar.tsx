@@ -76,9 +76,8 @@ export function Sidebar({ isOpen, isCollapsed, toggleSidebar, setIsCollapsed }: 
             {/* Sidebar Container */}
             <aside
                 className={cn(
-                    'z-50 flex-col bg-[#0f172a] border-r border-[#1e293b] transition-[width,transform] duration-300 ease-in-out h-screen',
-                    // Logic: Hidden on mobile when closed. Visible (Flex) on mobile when open. Always Flex on Desktop (2xl).
-                    isOpen ? 'flex translate-x-0' : 'hidden 2xl:flex 2xl:translate-x-0',
+                    'z-50 bg-[#0f172a] border-r border-[#1e293b] transition-[width,transform] duration-300 ease-in-out overflow-y-auto overflow-x-hidden',
+                    isOpen ? 'block translate-x-0' : 'hidden 2xl:block 2xl:translate-x-0',
                     isCollapsed ? 'w-[80px]' : 'w-72',
                 )}
                 style={{
@@ -86,20 +85,20 @@ export function Sidebar({ isOpen, isCollapsed, toggleSidebar, setIsCollapsed }: 
                     position: 'fixed',
                     top: 0,
                     left: 0,
-                    height: '100vh',
+                    bottom: 0,
                     backgroundColor: '#0f172a'
                 }}
                 onMouseEnter={() => setIsCollapsed(false)}
                 onMouseLeave={() => setIsCollapsed(true)}
             >
                 {/* Header */}
-                <div className={cn("flex h-16 items-center transition-all duration-300 border-b border-[#1e293b] shrink-0", isCollapsed ? "justify-center px-2" : "justify-between px-6")}>
+                <div className={cn("sidebar-header flex h-14 items-center transition-all duration-300 border-b border-[#1e293b]", isCollapsed ? "justify-center px-2" : "justify-between px-6")}>
                     <Link href="/dashboard" className={cn("flex items-center font-bold text-white transition-all duration-300", isCollapsed ? "justify-center" : "gap-3")}>
-                        <div className="relative flex items-center h-12 px-3">
+                        <div className="relative flex items-center h-10 px-2">
                             {/* Full logo */}
                             <span
                                 className={cn(
-                                    "text-white font-bold whitespace-nowrap text-2xl",
+                                    "text-white font-bold whitespace-nowrap text-xl",
                                     isCollapsed ? "hidden" : "block"
                                 )}
                             >
@@ -109,7 +108,7 @@ export function Sidebar({ isOpen, isCollapsed, toggleSidebar, setIsCollapsed }: 
                             {/* Collapsed logo */}
                             <span
                                 className={cn(
-                                    "absolute left-1/2 -translate-x-1/2 text-white font-extrabold text-xl",
+                                    "absolute left-1/2 -translate-x-1/2 text-white font-extrabold text-lg",
                                     isCollapsed ? "block" : "hidden"
                                 )}
                             >
@@ -119,31 +118,30 @@ export function Sidebar({ isOpen, isCollapsed, toggleSidebar, setIsCollapsed }: 
                     </Link>
                     {!isCollapsed && (
                         <button onClick={toggleSidebar} className="2xl:hidden text-white hover:text-orange-500">
-                            <X className="h-6 w-6" />
+                            <X className="h-5 w-5" />
                         </button>
                     )}
                 </div>
 
-                {/* Navigation */}
-                <nav className="flex-1 space-y-6 p-4 overflow-y-auto overflow-x-hidden custom-scrollbar min-h-0">
+                {/* Navigation - NO flex-1, takes only natural height */}
+                <nav className="space-y-2 p-3">
                     {navGroups.map((group, groupIndex) => (
-                        <div key={group.title}>
+                        <div key={group.title} className="sidebar-nav-group">
                             {!isCollapsed && (
                                 <h3
-                                    className="mb-2 px-4 text-xs font-bold uppercase tracking-wider transition-opacity duration-300 opacity-100"
-                                    style={{ color: '#f1f5f9' }} // Force color with inline style
+                                    className="sidebar-group-title mb-1 px-3 text-[11px] font-bold uppercase tracking-wider"
+                                    style={{ color: '#f1f5f9' }}
                                 >
                                     {group.title}
                                 </h3>
                             )}
                             {isCollapsed && groupIndex > 0 && (
-                                <div className="border-t border-[#1e293b] my-4 mx-4" />
+                                <div className="border-t border-[#1e293b] my-2 mx-3" />
                             )}
 
-                            <div className="space-y-1">
+                            <div className="space-y-0.5">
                                 {group.items.map((item) => {
                                     const isActive = pathname.startsWith(item.href)
-                                    // Special case for dashboard to match exact path or just /dashboard
                                     const isItemActive = item.href === '/dashboard'
                                         ? pathname === '/dashboard'
                                         : pathname.startsWith(item.href)
@@ -154,18 +152,18 @@ export function Sidebar({ isOpen, isCollapsed, toggleSidebar, setIsCollapsed }: 
                                             href={item.href}
                                             title={isCollapsed ? item.name : undefined}
                                             className={cn(
-                                                'flex items-center gap-4 px-4 py-3 text-[15px] font-medium rounded-xl transition-all duration-200 whitespace-nowrap group relative overflow-hidden',
+                                                'sidebar-nav-item flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 whitespace-nowrap group relative overflow-hidden',
                                                 isItemActive
                                                     ? '!bg-[#ea580c] !text-white shadow-lg shadow-orange-900/20'
                                                     : '!text-[#f1f5f9] hover:bg-[#1e293b] hover:text-white',
-                                                isCollapsed && 'justify-center px-0 w-12 h-12 mx-auto rounded-lg'
+                                                isCollapsed && 'justify-center px-0 w-10 h-10 mx-auto rounded-lg'
                                             )}
                                             style={{
                                                 backgroundColor: isItemActive ? '#ea580c' : undefined,
                                                 color: isItemActive ? '#ffffff' : '#f1f5f9'
                                             }}
                                         >
-                                            <item.icon className={cn("transition-transform duration-300 shrink-0", isCollapsed ? "h-6 w-6" : "h-5 w-5", isActive && !isCollapsed && "scale-110")} />
+                                            <item.icon className={cn("transition-transform duration-300 shrink-0", isCollapsed ? "h-5 w-5" : "h-4 w-4", isActive && !isCollapsed && "scale-110")} />
                                             <span className={cn('block transition-all duration-300 overflow-hidden', isCollapsed ? 'opacity-0 w-0 hidden' : 'opacity-100 w-auto transform translate-x-0')}>
                                                 {item.name}
                                             </span>
@@ -185,25 +183,25 @@ export function Sidebar({ isOpen, isCollapsed, toggleSidebar, setIsCollapsed }: 
                     ))}
                 </nav>
 
-                {/* Footer / User */}
-                <div className="p-4 border-t border-[#1e293b] space-y-2 mt-auto bg-[#0f172a]/50 backdrop-blur-sm shrink-0">
+                {/* Footer / User - flows directly after nav, no mt-auto */}
+                <div className="sidebar-footer p-3 border-t border-[#1e293b] space-y-1">
                     {/* Settings */}
                     <Link
                         href="/settings"
                         title={isCollapsed ? 'Settings' : undefined}
                         className={cn(
-                            'flex items-center gap-4 px-4 py-3 text-[15px] font-medium rounded-xl transition-all duration-200 whitespace-nowrap group relative overflow-hidden',
+                            'sidebar-nav-item flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 whitespace-nowrap group relative overflow-hidden',
                             pathname.startsWith('/settings')
                                 ? '!bg-[#ea580c] !text-white shadow-lg shadow-orange-900/20'
                                 : '!text-[#f1f5f9] hover:bg-[#1e293b] hover:text-white',
-                            isCollapsed && 'justify-center px-0 w-12 h-12 mx-auto rounded-lg'
+                            isCollapsed && 'justify-center px-0 w-10 h-10 mx-auto rounded-lg'
                         )}
                         style={{
                             backgroundColor: pathname.startsWith('/settings') ? '#ea580c' : undefined,
                             color: pathname.startsWith('/settings') ? '#ffffff' : '#f1f5f9'
                         }}
                     >
-                        <Settings className={cn("transition-transform duration-300 shrink-0", isCollapsed ? "h-6 w-6" : "h-5 w-5", pathname.startsWith('/settings') && !isCollapsed && "scale-110")} />
+                        <Settings className={cn("transition-transform duration-300 shrink-0", isCollapsed ? "h-5 w-5" : "h-4 w-4", pathname.startsWith('/settings') && !isCollapsed && "scale-110")} />
                         <span className={cn('block transition-all duration-300 overflow-hidden', isCollapsed ? 'opacity-0 w-0 hidden' : 'opacity-100 w-auto transform translate-x-0')}>
                             Settings
                         </span>
@@ -217,8 +215,8 @@ export function Sidebar({ isOpen, isCollapsed, toggleSidebar, setIsCollapsed }: 
                         )}
                     </Link>
 
-                    <div className={cn("flex items-center gap-4 p-2 rounded-xl transition-colors hover:bg-[#1e293b] cursor-pointer group", isCollapsed && "justify-center p-0 hover:bg-transparent")}>
-                        <div className="w-10 h-10 min-w-[40px] rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center font-bold text-white text-base shadow-md ring-2 ring-[#1e293b] group-hover:ring-[#334155] transition-all shrink-0">
+                    <div className={cn("flex items-center gap-3 p-2 rounded-lg transition-colors hover:bg-[#1e293b] cursor-pointer group", isCollapsed && "justify-center p-0 hover:bg-transparent")}>
+                        <div className="sidebar-user-avatar w-8 h-8 min-w-[32px] rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center font-bold text-white text-sm shadow-md ring-2 ring-[#1e293b] group-hover:ring-[#334155] transition-all shrink-0">
                             U
                         </div>
                         <div className={cn("transition-all duration-300 overflow-hidden whitespace-nowrap", isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100 flex-1')}>
@@ -232,7 +230,7 @@ export function Sidebar({ isOpen, isCollapsed, toggleSidebar, setIsCollapsed }: 
                         )}
                     </div>
                 </div>
-            </aside >
+            </aside>
         </>
     )
 }

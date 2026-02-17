@@ -55,7 +55,7 @@ export function GstRateMixChart({ data }: GstRateMixChartProps) {
                     <Legend
                         verticalAlign="bottom"
                         height={36}
-                        formatter={(value) => <span style={{ color: '#1e293b', fontWeight: 500 }}>{value}</span>}
+                        formatter={(value) => <span style={{ color: isDark ? '#e2e8f0' : '#1e293b', fontWeight: 600 }}>{value}</span>}
                     />
                 </PieChart>
             </ResponsiveContainer>
