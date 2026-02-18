@@ -207,7 +207,7 @@ export default async function DashboardPage({
               </div>
             ) : (
               <div className="space-y-4">
-                {data.operational.upcomingFollowups.map((f) => (
+                {data.operational.upcomingFollowups.map((f: any) => (
                   <div key={f.id} className="flex items-center justify-between p-3 rounded-lg bg-secondary/30 border border-secondary">
                     <div>
                       <p className="font-semibold text-sm">
@@ -253,7 +253,7 @@ export default async function DashboardPage({
                     </tr>
                   </thead>
                   <tbody>
-                    {data.operational.highRiskCustomers.map((c) => (
+                    {data.operational.highRiskCustomers.map((c: any) => (
                       <tr key={c.customerId} className="border-b border-border last:border-0 hover:bg-secondary/20 transition-colors">
                         <td className="px-4 py-3 font-medium">
                           <Link href={`/invoices?q=${encodeURIComponent(c.customerName)}`} className="hover:underline text-primary">
@@ -288,7 +288,7 @@ export default async function DashboardPage({
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {Object.entries(data.operational.agingBuckets).map(([bucket, amount]) => (
+                {Object.entries(data.operational.agingBuckets).map(([bucket, amount]: [string, any]) => (
                   <tr key={bucket} className="hover:bg-secondary/20">
                     <td className="p-3 font-medium">{bucket} Days</td>
                     <td className="p-3 text-right">₹{amount.toLocaleString()}</td>
@@ -305,7 +305,7 @@ export default async function DashboardPage({
             {data.operational.topDefaulters.length === 0 ? (
               <p className="text-center text-gray-500 py-6">No overdue customers 🎉</p>
             ) : (
-              data.operational.topDefaulters.map((c, idx) => (
+              data.operational.topDefaulters.map((c: any, idx: number) => (
                 <div key={idx} className="flex items-center justify-between p-3 rounded-lg bg-secondary/10 border border-transparent hover:border-secondary transition-all">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">

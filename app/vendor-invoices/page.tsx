@@ -197,7 +197,7 @@ export default async function VendorInvoicesPage({
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {invoices.map((inv) => {
+            {invoices.map((inv: any) => {
               const isOverdue =
                 inv.outstandingAmount > 0 && inv.dueDate < today
 
