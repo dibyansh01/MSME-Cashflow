@@ -152,12 +152,12 @@ export default async function CustomersPage({
   const locationOptions = locationsData
     .map((c: { location: string | null }) => c.location)
     .filter((loc: string | null): loc is string => !!loc)
-    .map(loc => ({ label: loc, value: loc }))
+    .map((loc: string) => ({ label: loc, value: loc }))
 
   const creditTermsOptions = creditTermsData
     .map((c: { creditTerms: number | null }) => c.creditTerms)
     .filter((ct: number | null): ct is number => ct !== null)
-    .map(ct => ({ label: `${ct} Days`, value: ct.toString() }))
+    .map((ct: number) => ({ label: `${ct} Days`, value: ct.toString() }))
 
   const statusOptions = [
     { label: 'Overdue', value: 'OVERDUE' },
