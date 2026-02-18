@@ -150,12 +150,12 @@ export default async function CustomersPage({
 
   // Map distinct data to filter options
   const locationOptions = locationsData
-    .map(c => c.location)
+    .map((c: { location: string | null }) => c.location)
     .filter((loc): loc is string => !!loc)
     .map(loc => ({ label: loc, value: loc }))
 
   const creditTermsOptions = creditTermsData
-    .map(c => c.creditTerms)
+    .map((c: { creditTerms: number | null }) => c.creditTerms)
     .filter((ct): ct is number => ct !== null)
     .map(ct => ({ label: `${ct} Days`, value: ct.toString() }))
 
