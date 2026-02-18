@@ -51,13 +51,33 @@ export default async function InvoiceDetailPage({
       </div>
 
       {/* Invoice Summary */}
-      <div className="grid grid-cols-2 gap-4 border rounded p-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 border rounded p-4 bg-gray-50">
         <div>
           <div className="text-sm text-gray-500">
-            Invoice Amount
+            Base Amount
           </div>
           <div className="font-bold">
             ₹{invoice.invoiceAmount.toLocaleString()}
+          </div>
+        </div>
+
+        {invoice.gstAmount && invoice.gstAmount > 0 && (
+          <div>
+            <div className="text-sm text-gray-500">
+              GST ({invoice.gstRate}%)
+            </div>
+            <div className="font-bold">
+              ₹{invoice.gstAmount.toLocaleString()}
+            </div>
+          </div>
+        )}
+
+        <div>
+          <div className="text-sm text-gray-500">
+            Total Amount
+          </div>
+          <div className="font-bold text-lg">
+            ₹{(invoice.invoiceAmount + (invoice.gstAmount || 0)).toLocaleString()}
           </div>
         </div>
 

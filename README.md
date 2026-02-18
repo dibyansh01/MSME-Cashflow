@@ -98,4 +98,15 @@ The `FollowupsQueuePage` (`/followups`) acts as the central hub for collections.
 - **PaymentEntry**: Records of payments made against invoices.
 - **FollowUp**: Logs of interactions (Calls, Visits) regarding an invoice.
 
+## 🧪 Test Users (Seeded)
+
+Run `npx prisma db seed` to populate the database with these users:
+
+| Role | Email | Password |
+|------|-------|----------|
+| Owner (Admin) | test@email.com | password123 |
+| Accounts | accounts@msme.com | password123 |
+| Sales | sales@msme.com | password123 |
+
+
 

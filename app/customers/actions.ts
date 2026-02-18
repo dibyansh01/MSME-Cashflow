@@ -19,6 +19,7 @@ export async function createCustomer(prevState: CustomerFormState, formData: For
   const email = formData.get('email') as string
   const location = formData.get('location') as string
   const creditTerms = formData.get('creditTerms') as string
+  const notes = formData.get('notes') as string
 
   if (!name) {
     return { error: 'Customer name is required' }
@@ -32,6 +33,7 @@ export async function createCustomer(prevState: CustomerFormState, formData: For
         email: email || null,
         location: location || null,
         creditTerms: creditTerms ? Number(creditTerms) : null,
+        notes: notes || null,
       },
     })
 

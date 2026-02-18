@@ -1,17 +1,24 @@
-import { createVendor } from '../actions';
+import { getServerSession } from 'next-auth'
+import { redirect } from 'next/navigation'
+import VendorForm from './VendorForm'
 
-export default function NewVendorPage() {
+export default async function NewVendorPage() {
+  const session = await getServerSession()
+
+  if (!session) {
+    redirect('/login')
+  }
+
   return (
-    <form action={createVendor} className="max-w-xl space-y-4">
-      <h1 className="text-xl font-semibold">Add Vendor</h1>
+    <div className="p-6 max-w-xl">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold">New Vendor</h1>
+        <p className="text-sm text-gray-500">
+          Add a vendor for tracking expenses and bills
+        </p>
+      </div>
 
-      <input name="name" placeholder="Vendor Name" required />
-      <input name="phone" placeholder="Phone" />
-      <input name="email" placeholder="Email" />
-      <input name="creditTerms" type="number" placeholder="Credit Terms (days)" />
-      <textarea name="notes" placeholder="Notes" />
-
-      <button className="btn-primary">Save Vendor</button>
-    </form>
-  );
+      <VendorForm />
+    </div>
+  )
 }

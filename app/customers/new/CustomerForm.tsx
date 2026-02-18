@@ -90,6 +90,19 @@ export default function CustomerForm() {
                     className="border p-2 w-full rounded"
                     placeholder="30"
                 />
+                
+            </div>
+
+            <div>
+                <label className="block text-sm font-medium mb-1">
+                    Notes
+                </label>
+                <textarea
+                    name="notes"
+                    rows={3}
+                    className="border p-2 w-full rounded"
+                    placeholder="Additional details..."
+                />
             </div>
 
             <div className="flex gap-3">

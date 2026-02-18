@@ -1,42 +1,31 @@
-import { createExpense } from '../actions';
-import { getExpenseCategories } from '@/lib/services/expenseCategoryService';
-import {prisma} from '@/lib/db/prisma';
+import { getServerSession } from 'next-auth'
+import { redirect } from 'next/navigation'
+import { getExpenseCategories } from '@/lib/services/expenseCategoryService'
+import { prisma } from '@/lib/db/prisma'
+import ExpenseForm from './ExpenseForm'
 
 export default async function NewExpensePage() {
-  const categories = await getExpenseCategories();
-  const vendors = await prisma.vendor.findMany();
+  const session = await getServerSession()
+
+  if (!session) {
+    redirect('/login')
+  }
+
+  const [categories, vendors] = await Promise.all([
+    getExpenseCategories(),
+    prisma.vendor.findMany({ orderBy: { name: 'asc' } }),
+  ])
 
   return (
-    <form action={createExpense} className="max-w-xl space-y-4">
-      <h1 className="text-xl font-semibold">Add Expense</h1>
+    <div className="p-6 max-w-xl">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold">New Expense</h1>
+        <p className="text-sm text-gray-500">
+          Record a new business expense
+        </p>
+      </div>
 
-      <input type="date" name="expenseDate" required />
-
-      <select name="categoryId" required>
-        <option value="">Select Category</option>
-        {categories.map(c => (
-          <option key={c.id} value={c.id}>{c.name}</option>
-        ))}
-      </select>
-
-      <select name="vendorId">
-        <option value="">No Vendor</option>
-        {vendors.map(v => (
-          <option key={v.id} value={v.id}>{v.name}</option>
-        ))}
-      </select>
-
-      <input name="amount" type="number" placeholder="Amount" required />
-
-      <select name="paymentMode">
-        <option value="CASH">Cash</option>
-        <option value="BANK">Bank</option>
-        <option value="UPI">UPI</option>
-      </select>
-
-      <textarea name="notes" placeholder="Notes" />
-
-      <button className="btn-primary">Save Expense</button>
-    </form>
-  );
+      <ExpenseForm categories={categories} vendors={vendors} />
+    </div>
+  )
 }

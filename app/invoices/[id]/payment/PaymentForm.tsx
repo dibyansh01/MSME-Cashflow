@@ -1,6 +1,8 @@
 'use client'
 
 import { useFormState } from 'react-dom'
+import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
 import { addPayment } from './actions'
 
 export default function PaymentForm({
@@ -9,6 +11,27 @@ export default function PaymentForm({
   invoiceId: string
 }) {
   const [state, formAction] = useFormState(addPayment, null)
+  const router = useRouter()
+
+  useEffect(() => {
+    if (state?.success) {
+      const timer = setTimeout(() => {
+        router.push(`/invoices/${invoiceId}`)
+        router.refresh()
+      }, 2000)
+      return () => clearTimeout(timer)
+    }
+  }, [state?.success, router, invoiceId])
+
+  if (state?.success) {
+    return (
+      <div className="bg-green-50 border border-green-200 text-green-800 p-6 rounded-lg text-center space-y-2">
+        <div className="text-2xl">✅</div>
+        <h3 className="font-bold text-lg">Payment Recorded!</h3>
+        <p>Redirecting to invoice details...</p>
+      </div>
+    )
+  }
 
   return (
     <form action={formAction} className="space-y-4">

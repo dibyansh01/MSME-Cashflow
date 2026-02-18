@@ -1,6 +1,7 @@
 'use server'
 
 import { prisma } from '@/lib/db/prisma'
+import { calculateGstAmounts } from '@/lib/utils/invoice'
 import { revalidatePath } from 'next/cache'
 
 export type InvoiceFormState = {
@@ -14,19 +15,29 @@ export async function createInvoice(prevState: InvoiceFormState, formData: FormD
   const invoiceDateStr = formData.get('invoiceDate') as string
   const invoiceAmountStr = formData.get('invoiceAmount') as string
   const paidAmountStr = formData.get('paidAmount') as string
+  const gstRateStr = formData.get('gstRate') as string
+  const gstAmountStr = formData.get('gstAmount') as string
 
   if (!customerId || !invoiceNo || !invoiceDateStr || !invoiceAmountStr || !paidAmountStr) {
     return { error: 'Missing required fields' }
   }
 
-  const invoiceAmount = Number(invoiceAmountStr)
+  const isGstInclusive = formData.get('isGstInclusive') === 'true'
+  const invoiceAmountEntered = Number(invoiceAmountStr)
   const paidAmount = Number(paidAmountStr)
+  const gstRate = gstRateStr ? Number(gstRateStr) : null
 
-  if (paidAmount > invoiceAmount) {
-    return { error: 'Paid amount cannot be greater than invoice amount' }
+  const { baseAmount: invoiceAmount, gstAmount, totalAmount } = calculateGstAmounts({
+    amountEntered: invoiceAmountEntered,
+    gstRate,
+    isGstInclusive
+  })
+
+  if (paidAmount > totalAmount) {
+    return { error: 'Paid amount cannot be greater than total invoice amount' }
   }
 
-  const outstandingAmount = invoiceAmount - paidAmount
+  const outstandingAmount = totalAmount - paidAmount
   const invoiceDate = new Date(invoiceDateStr)
 
   try {
@@ -54,6 +65,9 @@ export async function createInvoice(prevState: InvoiceFormState, formData: FormD
         invoiceDate,
         dueDate,
         invoiceAmount,
+        gstRate,
+        gstAmount,
+        isGstInclusive,
         paidAmount,
         outstandingAmount,
         status,
