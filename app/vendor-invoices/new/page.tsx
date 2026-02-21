@@ -1,7 +1,12 @@
+import { getServerSession } from 'next-auth';
+import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/db/prisma';
 import VendorInvoiceForm from './VendorInvoiceForm';
 
 export default async function NewVendorInvoicePage() {
+  const session = await getServerSession();
+  if (!session) redirect('/login');
+
   const vendors = await prisma.vendor.findMany({
     orderBy: { name: 'asc' },
   });
