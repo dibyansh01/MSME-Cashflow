@@ -156,7 +156,7 @@ export default async function ExpensesPage({
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {expenses.map((e) => (
+            {expenses.map((e: any) => (
               <tr key={e.id} className="hover:bg-muted/50 transition-colors">
                 <td className="p-3">
                   {new Date(e.expenseDate).toLocaleDateString()}

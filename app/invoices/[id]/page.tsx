@@ -137,7 +137,7 @@ export default async function InvoiceDetailPage({
         )}
 
         <ul className="space-y-3">
-          {invoice.followUps.map((f) => (
+          {invoice.followUps.map((f: any) => (
             <li
               key={f.id}
               className="border-b pb-2"
@@ -178,7 +178,7 @@ export default async function InvoiceDetailPage({
         )}
 
         <ul className="space-y-2">
-          {invoice.payments.map((p) => (
+          {invoice.payments.map((p: any) => (
             <li key={p.id} className="border-b pb-2">
               <div className="text-sm font-medium">
                 ₹{p.amount.toLocaleString()} — {p.method}

@@ -126,9 +126,9 @@ export default async function VendorsPage({
   const totalPages = Math.ceil(totalCount / pageSize)
 
   const creditTermsOptions = creditTermsData
-    .map(v => v.creditTerms)
-    .filter((ct): ct is number => ct !== null)
-    .map(ct => ({ label: `${ct} Days`, value: ct.toString() }))
+    .map((v: any) => v.creditTerms)
+    .filter((ct: number | null): ct is number => ct !== null)
+    .map((ct: number) => ({ label: `${ct} Days`, value: ct.toString() }))
 
   const statusOptions = [
     { label: 'Overdue', value: 'OVERDUE' },
@@ -191,7 +191,7 @@ export default async function VendorsPage({
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {vendors.map((v) => (
+            {vendors.map((v: any) => (
               <tr key={v.id} className="hover:bg-muted/50 transition-colors">
                 <td className="p-3 font-medium">
                   <Link
@@ -214,14 +214,14 @@ export default async function VendorsPage({
                     today.setHours(0, 0, 0, 0)
 
                     const hasOverdue = vendorInvoices.some(
-                      (inv) => inv.status === 'OVERDUE' || (inv.outstandingAmount > 0 && new Date(inv.dueDate) < today)
+                      (inv: any) => inv.status === 'OVERDUE' || (inv.outstandingAmount > 0 && new Date(inv.dueDate) < today)
                     )
 
                     if (hasOverdue) {
                       return <Badge variant="danger">Overdue</Badge>
                     }
 
-                    const totalOutstanding = vendorInvoices.reduce((sum, inv) => sum + inv.outstandingAmount, 0)
+                    const totalOutstanding = vendorInvoices.reduce((sum: number, inv: any) => sum + inv.outstandingAmount, 0)
 
                     if (totalOutstanding > 0) {
                       return <Badge variant="warning">Pending</Badge>

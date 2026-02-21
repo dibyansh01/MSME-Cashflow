@@ -152,12 +152,12 @@ export default async function CustomersPage({
   const locationOptions = locationsData
     .map((c: { location: string | null }) => c.location)
     .filter((loc: string | null): loc is string => !!loc)
-    .map(loc => ({ label: loc, value: loc }))
+    .map((loc: string) => ({ label: loc, value: loc }))
 
   const creditTermsOptions = creditTermsData
     .map((c: { creditTerms: number | null }) => c.creditTerms)
     .filter((ct: number | null): ct is number => ct !== null)
-    .map(ct => ({ label: `${ct} Days`, value: ct.toString() }))
+    .map((ct: number) => ({ label: `${ct} Days`, value: ct.toString() }))
 
   const statusOptions = [
     { label: 'Overdue', value: 'OVERDUE' },
@@ -229,7 +229,7 @@ export default async function CustomersPage({
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {customers.map((c) => (
+            {customers.map((c: any) => (
               <tr key={c.id} className="hover:bg-muted/50 transition-colors">
                 <td className="p-3 font-medium">
                   <Link
@@ -252,14 +252,14 @@ export default async function CustomersPage({
                     today.setHours(0, 0, 0, 0)
 
                     const hasOverdue = invoices.some(
-                      (inv) => inv.outstandingAmount > 0 && new Date(inv.dueDate) < today
+                      (inv: any) => inv.outstandingAmount > 0 && new Date(inv.dueDate) < today
                     )
 
                     if (hasOverdue) {
                       return <Badge variant="danger">Overdue</Badge>
                     }
 
-                    const totalOutstanding = invoices.reduce((sum, inv) => sum + inv.outstandingAmount, 0)
+                    const totalOutstanding = invoices.reduce((sum: number, inv: any) => sum + inv.outstandingAmount, 0)
 
                     if (totalOutstanding > 0) {
                       return <Badge variant="warning">Pending</Badge>

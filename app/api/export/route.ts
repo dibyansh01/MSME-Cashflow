@@ -58,7 +58,7 @@ export async function GET(req: NextRequest) {
             })
 
             // Transform for Export
-            data = data.map(c => {
+            data = data.map((c: any) => {
                 const invoices = c.invoices || []
                 const today = new Date()
                 today.setHours(0, 0, 0, 0)
@@ -141,7 +141,7 @@ export async function GET(req: NextRequest) {
             })
 
             // Transform
-            data = data.map(inv => {
+            data = data.map((inv: any) => {
                 const isOverdue = inv.outstandingAmount > 0 && new Date(inv.dueDate) < today
                 let displayStatus = 'UNPAID'
                 if (inv.outstandingAmount === 0) displayStatus = 'PAID'
@@ -241,7 +241,7 @@ export async function GET(req: NextRequest) {
             })
 
             // Transform
-            data = data.map(fu => {
+            data = data.map((fu: any) => {
                 const inv = fu.invoice
                 const displayDate = fu.status === 'SCHEDULED' ? fu.followUpDate : fu.nextFollowUpOn
 
@@ -299,7 +299,7 @@ export async function GET(req: NextRequest) {
                 take: MAX_ROWS,
             })
 
-            data = data.map(v => {
+            data = data.map((v: any) => {
                 const invoices = v.invoices || []
                 const today = new Date()
                 today.setHours(0, 0, 0, 0)
@@ -358,7 +358,7 @@ export async function GET(req: NextRequest) {
                 take: MAX_ROWS,
             })
 
-            data = data.map(e => ({
+            data = data.map((e: any) => ({
                 date: new Date(e.expenseDate).toLocaleDateString(),
                 category: e.category.name,
                 vendor: e.vendor?.name || '-',
@@ -414,7 +414,7 @@ export async function GET(req: NextRequest) {
                 take: MAX_ROWS,
             })
 
-            data = data.map(inv => {
+            data = data.map((inv: any) => {
                 const isOverdue = inv.outstandingAmount > 0 && new Date(inv.dueDate) < today
                 let displayStatus = 'UNPAID'
                 if (inv.outstandingAmount === 0) displayStatus = 'PAID'

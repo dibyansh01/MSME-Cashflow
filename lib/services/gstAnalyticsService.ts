@@ -9,7 +9,34 @@ export interface DateRange {
 
 export type Period = 'week' | 'month' | 'year';
 
-export async function getGstAnalyticsData(range?: DateRange, period: Period = 'month') {
+export interface GstTrendItem {
+    collected: number;
+    paidClaimable: number;
+    label: string;
+}
+
+export interface GstRateMixItem {
+    name: string;
+    value: number;
+}
+
+export interface LeakageItem {
+    name: string;
+    value: number;
+    percentage: number;
+}
+
+export interface GstAnalyticsData {
+    trendChartData: GstTrendItem[];
+    rateMixChartData: GstRateMixItem[];
+    leakage: {
+        totalLeakage: number;
+        byCategory: LeakageItem[];
+        byVendor: LeakageItem[];
+    };
+}
+
+export async function getGstAnalyticsData(range?: DateRange, period: Period = 'month'): Promise<GstAnalyticsData> {
     // Default to Last 6 Months if no range provided
     const today = new Date();
     const defaultFrom = new Date(today);
