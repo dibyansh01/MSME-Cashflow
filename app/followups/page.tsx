@@ -2,6 +2,15 @@ import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { prisma } from '@/lib/db/prisma'
+import { Prisma } from '@prisma/client'
+
+type FollowUpWithInvoice = Prisma.FollowUpGetPayload<{
+  include: {
+    invoice: {
+      include: { customer: true }
+    }
+  }
+}>
 import { getNextNDays } from '@/lib/utils/date'
 import { getReminderMessage } from '@/lib/collections/messageTemplates'
 import WhatsAppActions from '@/components/WhatsAppActions'
@@ -190,7 +199,7 @@ export default async function FollowupsQueuePage({
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {followUps.map((fu) => {
+            {followUps.map((fu: FollowUpWithInvoice) => {
               const inv = fu.invoice
               const overdue = inv.dueDate < today
 

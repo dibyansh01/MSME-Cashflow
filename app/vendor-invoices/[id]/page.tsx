@@ -86,7 +86,7 @@ export default async function VendorInvoiceDetail({
         )}
 
         <ul className="space-y-2">
-          {invoice.payments.map((p) => (
+          {invoice.payments.map((p: any) => (
             <li key={p.id} className="border-b pb-2">
               <div className="text-sm font-medium">
                 ₹{p.amount.toLocaleString()} — {p.method}

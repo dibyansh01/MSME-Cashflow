@@ -6,7 +6,7 @@ import { DashboardFilter } from '@/app/components/ui/DashboardFilter';
 import { GstTrendChart } from '@/components/analytics/GstTrendChart';
 import { GstRateMixChart } from '@/components/analytics/GstRateMixChart';
 import { GstLeakageList } from '@/components/analytics/GstLeakageList';
-import { getGstAnalyticsData, Period } from '@/lib/services/gstAnalyticsService';
+import { getGstAnalyticsData, Period, GstTrendItem, GstRateMixItem } from '@/lib/services/gstAnalyticsService';
 import Link from 'next/link';
 import { ArrowLeft, Calendar } from 'lucide-react';
 import { SEMANTIC_STYLES, CHART_PALETTE_MAIN } from '@/lib/constants/colors';
@@ -72,13 +72,13 @@ export default async function GstAnalyticsPage({
                     <div className={`p-4 rounded-xl ${SEMANTIC_STYLES.info.wrapper}`}>
                         <p className="text-sm font-medium mb-1 !text-blue-900 dark:!text-blue-200">Total Collected (Liability)</p>
                         <p className="text-2xl font-bold !text-blue-700 dark:!text-blue-300">
-                            ₹{data.trendChartData.reduce((acc, curr) => acc + curr.collected, 0).toLocaleString()}
+                            ₹{data.trendChartData.reduce((acc: number, curr: GstTrendItem) => acc + curr.collected, 0).toLocaleString()}
                         </p>
                     </div>
                     <div className={`p-4 rounded-xl ${SEMANTIC_STYLES.success.wrapper}`}>
                         <p className="text-sm font-medium mb-1 !text-green-900 dark:!text-green-200">Total Paid (Asset/Credit)</p>
                         <p className="text-2xl font-bold !text-green-700 dark:!text-green-300">
-                            ₹{data.trendChartData.reduce((acc, curr) => acc + curr.paidClaimable, 0).toLocaleString()}
+                            ₹{data.trendChartData.reduce((acc: number, curr: GstTrendItem) => acc + curr.paidClaimable, 0).toLocaleString()}
                         </p>
                     </div>
                 </div>
@@ -94,7 +94,7 @@ export default async function GstAnalyticsPage({
                 >
                     <GstRateMixChart data={data.rateMixChartData} />
                     <div className="mt-6 space-y-3">
-                        {data.rateMixChartData.map((item, idx) => (
+                        {data.rateMixChartData.map((item: GstRateMixItem, idx: number) => (
                             <div key={idx} className="flex justify-between items-center text-sm p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                 <div className="flex items-center gap-2">
                                     <div

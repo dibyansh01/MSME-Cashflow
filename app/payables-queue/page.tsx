@@ -65,7 +65,7 @@ export default async function PayablesQueuePage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {overdueInvoices.map((inv) => (
+              {overdueInvoices.map((inv: any) => (
                 <tr key={inv.id} className="hover:bg-red-50/30 transition-colors">
                   <td className="p-3 font-medium text-red-600">
                     {new Date(inv.dueDate).toLocaleDateString()}
@@ -130,7 +130,7 @@ export default async function PayablesQueuePage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {upcomingInvoices.map((inv) => (
+              {upcomingInvoices.map((inv: any) => (
                 <tr key={inv.id} className="hover:bg-muted/50 transition-colors">
                   <td className="p-3">
                     {new Date(inv.dueDate).toLocaleDateString()}
