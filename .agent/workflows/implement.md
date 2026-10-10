@@ -1,5 +1,5 @@
 ---
-description: Implement an approved plan on a feature branch with tests, docs and a walkthrough.
+description: Implement an approved plan on a feature branch with tests, docs, a progress record and a walkthrough.
 ---
 Usage: `/implement` (after I approved the plan in this conversation)
 
@@ -10,5 +10,6 @@ Usage: `/implement` (after I approved the plan in this conversation)
 5. Run `npm run typecheck && npm run lint && npm test`. Fix failures; if you cannot fix after two attempts, stop and report what you tried.
 6. If you touched data access, run/add the cross-tenant isolation test.
 7. Run `/docs-sync`.
-8. Produce a **walkthrough artifact**: what changed, files list, test results, screenshots/recording from the browser agent if UI changed, manual verification steps, known limitations, anything uncertain.
-9. **STOP** and wait for my review. Do not merge or push.
+8. Mark the task `[~]` (in review) in `docs/PROGRESS.md` with the branch name, and add a draft entry to the top of `docs/DEVLOG.md`. (I will tick it `[x]` after I verify and merge.)
+9. Produce a **walkthrough artifact**: what changed, files list, test results, screenshots/recording from the browser agent if UI changed, manual verification steps, known limitations, anything uncertain.
+10. **STOP** and wait for my review. Do not merge or push.
