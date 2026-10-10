@@ -1,0 +1,911 @@
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 17.6
+-- Dumped by pg_dump version 17.0 (Ubuntu 17.0-1.pgdg22.04+1)
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- Name: public; Type: SCHEMA; Schema: -; Owner: -
+--
+
+CREATE SCHEMA public;
+
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- Name: Customer; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public."Customer" (
+    id text NOT NULL,
+    name text NOT NULL,
+    phone text,
+    email text,
+    "creditTerms" integer,
+    "createdAt" timestamp(3) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    location text,
+    notes text
+);
+
+
+--
+-- Name: Expense; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public."Expense" (
+    id text NOT NULL,
+    "vendorId" text,
+    "categoryId" text NOT NULL,
+    "expenseDate" timestamp(3) without time zone NOT NULL,
+    amount double precision NOT NULL,
+    "paymentMode" text NOT NULL,
+    notes text,
+    "createdAt" timestamp(3) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    "gstAmount" double precision,
+    "gstRate" double precision,
+    "isGstEligible" boolean DEFAULT false NOT NULL,
+    "isGstInclusive" boolean DEFAULT false NOT NULL
+);
+
+
+--
+-- Name: ExpenseCategory; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public."ExpenseCategory" (
+    id text NOT NULL,
+    name text NOT NULL,
+    "createdAt" timestamp(3) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+--
+-- Name: FollowUp; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public."FollowUp" (
+    id text NOT NULL,
+    "invoiceId" text NOT NULL,
+    "followUpDate" timestamp(3) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    method text NOT NULL,
+    status text NOT NULL,
+    notes text,
+    "nextFollowUpOn" timestamp(3) without time zone,
+    "createdAt" timestamp(3) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+--
+-- Name: Invoice; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public."Invoice" (
+    id text NOT NULL,
+    "customerId" text NOT NULL,
+    "invoiceNo" text NOT NULL,
+    "invoiceDate" timestamp(3) without time zone NOT NULL,
+    "dueDate" timestamp(3) without time zone NOT NULL,
+    "outstandingAmount" double precision NOT NULL,
+    status text NOT NULL,
+    "createdAt" timestamp(3) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    "invoiceAmount" double precision NOT NULL,
+    "paidAmount" double precision DEFAULT 0 NOT NULL,
+    "gstAmount" double precision,
+    "gstRate" double precision,
+    "isGstInclusive" boolean DEFAULT false NOT NULL
+);
+
+
+--
+-- Name: PaymentEntry; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public."PaymentEntry" (
+    id text NOT NULL,
+    "invoiceId" text NOT NULL,
+    amount double precision NOT NULL,
+    "paymentDate" timestamp(3) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    method text NOT NULL,
+    reference text,
+    notes text,
+    "createdAt" timestamp(3) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+--
+-- Name: User; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public."User" (
+    id text NOT NULL,
+    name text NOT NULL,
+    email text NOT NULL,
+    password text NOT NULL,
+    role text NOT NULL,
+    "createdAt" timestamp(3) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+--
+-- Name: Vendor; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public."Vendor" (
+    id text NOT NULL,
+    name text NOT NULL,
+    phone text,
+    email text,
+    "creditTerms" integer,
+    notes text,
+    "createdAt" timestamp(3) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+--
+-- Name: VendorInvoice; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public."VendorInvoice" (
+    id text NOT NULL,
+    "vendorId" text NOT NULL,
+    "invoiceNo" text NOT NULL,
+    "invoiceDate" timestamp(3) without time zone NOT NULL,
+    "dueDate" timestamp(3) without time zone NOT NULL,
+    "invoiceAmount" double precision NOT NULL,
+    "gstAmount" double precision,
+    "gstRate" double precision,
+    "isGstInclusive" boolean DEFAULT false NOT NULL,
+    "isGstEligible" boolean DEFAULT true NOT NULL,
+    "paidAmount" double precision DEFAULT 0 NOT NULL,
+    "outstandingAmount" double precision NOT NULL,
+    status text NOT NULL,
+    description text,
+    "createdAt" timestamp(3) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+--
+-- Name: VendorPayment; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public."VendorPayment" (
+    id text NOT NULL,
+    "vendorInvoiceId" text NOT NULL,
+    amount double precision NOT NULL,
+    "paymentDate" timestamp(3) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    method text NOT NULL,
+    reference text,
+    notes text,
+    "createdAt" timestamp(3) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+--
+-- Name: _prisma_migrations; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public._prisma_migrations (
+    id character varying(36) NOT NULL,
+    checksum character varying(64) NOT NULL,
+    finished_at timestamp with time zone,
+    migration_name character varying(255) NOT NULL,
+    logs text,
+    rolled_back_at timestamp with time zone,
+    started_at timestamp with time zone DEFAULT now() NOT NULL,
+    applied_steps_count integer DEFAULT 0 NOT NULL
+);
+
+
+--
+-- Data for Name: Customer; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public."Customer" (id, name, phone, email, "creditTerms", "createdAt", location, notes) FROM stdin;
+2237034a-a618-4787-8d1e-aba0617806e7	Globex Corporation 0	9876555885	contact0@globexcorporation.com	30	2026-02-16 18:11:13.761	Chicago	\N
+7f2e1dc1-7b3c-438f-8015-e03bc49b358a	Dunder Mifflin 1	9876580409	contact1@dundermifflin.com	15	2026-02-16 18:11:13.845	London	\N
+40d418f1-f9ed-48c1-a332-0463609bb3b0	Globex Corporation 2	9876559473	contact2@globexcorporation.com	60	2026-02-16 18:11:13.907	Berlin	\N
+9fc442b9-2748-4ac9-aa0d-89b0912283b5	Dunder Mifflin 3	9876517125	contact3@dundermifflin.com	15	2026-02-16 18:11:13.966	Delhi	\N
+5317e3ec-7ff7-42a5-b997-c86222e30985	Aperture Science 4	9876537224	contact4@aperturescience.com	30	2026-02-16 18:11:14.021	Singapore	\N
+e50b6b03-65c3-462a-951f-56fea19b5063	Aperture Science 5	9876595351	contact5@aperturescience.com	15	2026-02-16 18:11:14.08	London	\N
+922cf012-51aa-4e53-9444-fc2dc7f6b6aa	Massive Dynamic 6	9876570867	contact6@massivedynamic.com	15	2026-02-16 18:11:14.146	Tokyo	\N
+000037ce-70d1-452e-8b03-441a7dcc2572	Hannah Ian 7	9876510833	contact7@hannahian.com	45	2026-02-16 18:11:14.201	Dubai	\N
+36f0759f-6282-4940-91fe-c8392a791d8c	Initech 8	9876514923	contact8@initech.com	45	2026-02-16 18:11:14.26	Toronto	\N
+98edac12-7d54-4e96-a0a5-8ec9fcb3782d	Umbrella Corp 9	9876579148	contact9@umbrellacorp.com	15	2026-02-16 18:11:14.325	Dubai	\N
+df9cbd1f-418f-487e-a48d-a833be5a5427	Prestige Worldwide 10	9876559599	contact10@prestigeworldwide.com	30	2026-02-16 18:11:14.376	Bangalore	\N
+9b6e19b1-8d03-4950-bc14-921dc21c9b28	Diana Evans 11	9876561676	contact11@dianaevans.com	60	2026-02-16 18:11:14.443	Dubai	\N
+96ea192f-9218-4c8d-90bf-0a1d14f1b094	Initech 12	9876547194	contact12@initech.com	60	2026-02-16 18:11:14.51	San Francisco	\N
+5988b1bc-9574-473e-a249-ce2858100770	John Doe 13	9876571617	contact13@johndoe.com	30	2026-02-16 18:11:14.566	Tokyo	\N
+ae39afa5-6774-429b-9d20-7fd7f8f500ba	Soylent Corp 14	9876531747	contact14@soylentcorp.com	45	2026-02-16 18:11:14.642	San Francisco	\N
+78cc21a9-39a8-4e67-9f67-75a143f4ddca	Wayne Enterprises 15	9876555555	contact15@wayneenterprises.com	45	2026-02-16 18:11:14.702	Paris	\N
+be63df79-5e53-4563-a054-2c85a4903fd8	George Harris 16	9876547332	contact16@georgeharris.com	45	2026-02-16 18:11:14.782	San Francisco	\N
+1d95a161-99ba-4f6d-9092-2f3069d0faa1	Cyberdyne Systems 17	9876570055	contact17@cyberdynesystems.com	60	2026-02-16 18:11:14.847	Singapore	\N
+0703a5fc-7002-42aa-ab2c-7a27fa2702a1	Prestige Worldwide 18	9876527340	contact18@prestigeworldwide.com	15	2026-02-16 18:11:14.917	Boston	\N
+4619b24d-e6b2-4871-940b-68af58fb532a	Vehement Capital 19	9876532619	contact19@vehementcapital.com	15	2026-02-16 18:11:14.976	Mumbai	\N
+\.
+
+
+--
+-- Data for Name: Expense; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public."Expense" (id, "vendorId", "categoryId", "expenseDate", amount, "paymentMode", notes, "createdAt", "gstAmount", "gstRate", "isGstEligible", "isGstInclusive") FROM stdin;
+ac1534ea-a3b7-4d73-a710-02a0db2776c9	\N	a061f26b-cf03-4674-ab0f-c0f17e393274	2025-12-23 18:11:32.595	13816	UPI	Payment for Miscellaneous	2026-02-16 18:11:32.596	0	0	t	f
+0eb8373e-294c-45f3-b24b-a8cf14049929	00a56a86-dd3f-450a-8400-514253377224	78830a01-c14b-45df-bf8b-132eb1cc85d4	2026-01-25 18:11:32.649	3989	BANK	Payment for Utilities	2026-02-16 18:11:32.651	0	0	f	f
+675591b8-d8d0-4b39-a3af-7b8ee0ffe71a	782dbc98-aea5-449e-beb2-df604c62f030	3f5bdd2b-2f7c-4bb6-a9b3-676b84dcd65a	2026-01-18 18:11:32.701	12494	UPI	Payment for Rent / Lease	2026-02-16 18:11:32.703	624.7	5	f	f
+bc62dfcc-35cf-414e-8099-96b02eecb83d	\N	dbaec700-d83d-4d26-89d1-213ec22b6c21	2026-01-17 18:11:32.762	14541	UPI	Payment for Salaries & Wages	2026-02-16 18:11:32.763	1744.92	12	f	f
+e6f8f4c5-a72e-4a38-9918-5220b503224f	\N	9f640ef3-7795-4783-8dec-f1d45d9c41c6	2026-01-22 18:11:32.815	10590	BANK	Payment for Office Expenses	2026-02-16 18:11:32.816	2965.2	28	t	f
+45194e3d-f406-4f75-966b-9df006c22271	\N	b86742e2-b382-4926-8975-620424400bc8	2026-01-12 18:11:32.872	5763	CASH	Payment for Raw Materials / Purchases	2026-02-16 18:11:32.873	0	0	t	f
+e4e4c20e-8c10-4965-b418-1540a86bcb7f	\N	b86742e2-b382-4926-8975-620424400bc8	2025-12-25 18:11:32.93	4568	CASH	Payment for Raw Materials / Purchases	2026-02-16 18:11:32.931	1279.04	28	t	f
+09fd6683-ea21-4b87-aa5f-fa480560e0ff	\N	78830a01-c14b-45df-bf8b-132eb1cc85d4	2026-01-11 18:11:32.989	13730	UPI	Payment for Utilities	2026-02-16 18:11:32.99	0	0	t	f
+5cb73424-3ef9-417e-bcad-4f9685aa48c4	0c6e7974-6882-4286-baf3-312ca03f938b	0cbc20a6-bbf2-4bb9-ab7d-de855dcc4361	2026-01-08 18:11:33.06	11157	UPI	Payment for Taxes & Statutory	2026-02-16 18:11:33.061	2008.26	18	t	f
+cd97e610-2eed-47a6-8ab4-bb707219e799	f7f06152-9fa2-4caa-8784-2dca769c8ea6	d790f0f7-335d-41d2-9a48-dfdda44e3e55	2025-12-27 18:11:33.114	12864	UPI	Payment for Supplier Payments	2026-02-16 18:11:33.116	0	0	f	f
+a60df53b-e9aa-4834-870c-ce7826cb5ca9	f7f06152-9fa2-4caa-8784-2dca769c8ea6	d790f0f7-335d-41d2-9a48-dfdda44e3e55	2025-12-23 18:11:33.169	8538	UPI	Payment for Supplier Payments	2026-02-16 18:11:33.171	2390.64	28	t	f
+0c4a399b-50c0-4761-baab-06b9ee1ecee9	\N	dbaec700-d83d-4d26-89d1-213ec22b6c21	2025-12-24 18:11:33.22	13049	BANK	Payment for Salaries & Wages	2026-02-16 18:11:33.221	0	0	f	f
+04f51e52-8b60-46d8-8a5e-888f07b928da	37cbe95a-a8de-4c28-9fa3-b00934153402	0a47043c-baa3-468c-ab02-259bed3c7f7b	2026-01-26 18:11:33.27	5685	CASH	Payment for Transport & Logistics	2026-02-16 18:11:33.271	284.25	5	f	f
+5141b555-53ef-4ba3-9793-703a2a05e8f7	\N	9f640ef3-7795-4783-8dec-f1d45d9c41c6	2026-01-01 18:11:33.318	3734	UPI	Payment for Office Expenses	2026-02-16 18:11:33.319	0	0	t	f
+f7854afc-d08c-4569-88cf-60a4dfec1cea	37cbe95a-a8de-4c28-9fa3-b00934153402	9f640ef3-7795-4783-8dec-f1d45d9c41c6	2026-01-25 18:11:33.376	5398	BANK	Payment for Office Expenses	2026-02-16 18:11:33.377	647.76	12	t	f
+8a6f5eb1-317a-4646-b7a0-b4d042aa63ca	f7f06152-9fa2-4caa-8784-2dca769c8ea6	78830a01-c14b-45df-bf8b-132eb1cc85d4	2026-01-05 18:11:33.435	4777	CASH	Payment for Utilities	2026-02-16 18:11:33.436	1337.56	28	t	f
+cdb15822-3b9d-4c45-bf86-e802fdeba4f5	fe8625e3-bf8b-4403-a962-b138095e35bd	cccc6be1-29e7-493a-84bb-e7abc284133c	2026-01-05 18:11:33.492	5209	CASH	Payment for Maintenance & Repairs	2026-02-16 18:11:33.493	1458.52	28	t	f
+40947a64-963f-4692-8ac7-3e6804b3304c	\N	9f640ef3-7795-4783-8dec-f1d45d9c41c6	2025-12-26 18:11:33.55	3532	UPI	Payment for Office Expenses	2026-02-16 18:11:33.551	423.84	12	t	f
+83625818-bed3-4539-8963-b6edb5896b9d	\N	3e443e56-a0f5-47d2-a364-fa62e86c128b	2026-02-11 18:11:33.626	1046	BANK	Payment for Packaging & Consumables	2026-02-16 18:11:33.627	0	0	t	f
+437cbb14-1801-492a-b8ef-5716b5145cd2	\N	d790f0f7-335d-41d2-9a48-dfdda44e3e55	2026-01-29 18:11:33.68	12154	UPI	Payment for Supplier Payments	2026-02-16 18:11:33.682	3403.12	28	t	f
+f58047bd-dc65-4b53-a786-58d7c07a6146	266d428a-b95d-4b59-9c02-6bef1823ee0a	9f640ef3-7795-4783-8dec-f1d45d9c41c6	2026-01-19 18:11:33.759	14592	BANK	Payment for Office Expenses	2026-02-16 18:11:33.76	0	0	f	f
+f576b12c-d348-40fe-b1ab-e94eed6afe64	\N	3e443e56-a0f5-47d2-a364-fa62e86c128b	2026-01-06 18:11:33.921	7361	UPI	Payment for Packaging & Consumables	2026-02-16 18:11:33.922	883.32	12	t	f
+4245751c-1536-4b0d-ac14-c4537ffa25cb	fe8625e3-bf8b-4403-a962-b138095e35bd	cccc6be1-29e7-493a-84bb-e7abc284133c	2025-12-30 18:11:34.139	10752	CASH	Payment for Maintenance & Repairs	2026-02-16 18:11:34.14	537.6	5	t	f
+3969d916-4002-4dfe-a669-5906c330dbd0	37cbe95a-a8de-4c28-9fa3-b00934153402	3f5bdd2b-2f7c-4bb6-a9b3-676b84dcd65a	2025-12-26 18:11:34.423	13712	BANK	Payment for Rent / Lease	2026-02-16 18:11:34.424	2468.16	18	t	f
+f2d10fa7-f318-4e0c-990b-f095c04f5974	\N	0cbc20a6-bbf2-4bb9-ab7d-de855dcc4361	2026-01-09 18:11:34.629	10115	BANK	Payment for Taxes & Statutory	2026-02-16 18:11:34.631	1213.8	12	f	f
+6f326f12-8a87-4973-9a1e-bb7b2ba15fa7	0c6e7974-6882-4286-baf3-312ca03f938b	a7a8fa8c-f200-4caf-938c-9628f21081fb	2026-01-12 18:11:34.675	12183	CASH	Payment for Loan EMI / Interest	2026-02-16 18:11:34.677	1461.96	12	t	f
+9e5edc8a-7afb-4cf0-a373-c3fc2f1745e4	ad257c5a-3001-4ee8-84e5-df009a33c0eb	a7a8fa8c-f200-4caf-938c-9628f21081fb	2025-12-26 18:11:34.723	5224	BANK	Payment for Loan EMI / Interest	2026-02-16 18:11:34.725	0	0	t	f
+9192edd3-1af0-4f51-ba52-3b07c7bd6441	0c6e7974-6882-4286-baf3-312ca03f938b	a061f26b-cf03-4674-ab0f-c0f17e393274	2026-02-13 18:11:34.783	1598	CASH	Payment for Miscellaneous	2026-02-16 18:11:34.785	79.9	5	t	f
+6b093b28-b9d5-4eed-922b-dc9e92430979	\N	cccc6be1-29e7-493a-84bb-e7abc284133c	2026-01-05 18:11:34.841	819	CASH	Payment for Maintenance & Repairs	2026-02-16 18:11:34.842	0	0	f	f
+bede3bfa-240d-46b6-9e42-8d9f4871cb83	00a56a86-dd3f-450a-8400-514253377224	b86742e2-b382-4926-8975-620424400bc8	2026-01-19 18:11:34.899	3916	BANK	Payment for Raw Materials / Purchases	2026-02-16 18:11:34.9	195.8	5	t	f
+83cc4a3d-1833-45f4-b93f-6ab0a6d7a3ef	\N	a7a8fa8c-f200-4caf-938c-9628f21081fb	2026-02-10 18:11:34.954	10574	CASH	Payment for Loan EMI / Interest	2026-02-16 18:11:34.955	528.7	5	f	f
+aab928a6-644c-4a99-81bb-212987642d11	\N	3e443e56-a0f5-47d2-a364-fa62e86c128b	2026-01-03 18:11:35.02	7739	CASH	Payment for Packaging & Consumables	2026-02-16 18:11:35.021	386.95	5	t	f
+02b9cf05-c1ea-41a2-b282-ee7f6d8030f1	\N	dbaec700-d83d-4d26-89d1-213ec22b6c21	2026-01-01 18:11:35.07	1328	CASH	Payment for Salaries & Wages	2026-02-16 18:11:35.071	239.04	18	t	f
+fee7fe79-d378-4591-b33d-f056aaf35032	\N	a061f26b-cf03-4674-ab0f-c0f17e393274	2026-02-06 18:11:35.122	3339	UPI	Payment for Miscellaneous	2026-02-16 18:11:35.123	166.95	5	t	f
+c3fa5bcb-bf8f-4e7a-915e-b910fcaaeae9	37cbe95a-a8de-4c28-9fa3-b00934153402	b86742e2-b382-4926-8975-620424400bc8	2026-01-12 18:11:35.181	8467	CASH	Payment for Raw Materials / Purchases	2026-02-16 18:11:35.182	2370.76	28	t	f
+305a3547-04fe-4da3-9f17-1a50f6b3f8e1	\N	0a47043c-baa3-468c-ab02-259bed3c7f7b	2026-02-01 18:11:35.234	14967	BANK	Payment for Transport & Logistics	2026-02-16 18:11:35.235	2694.06	18	t	f
+68fb5be8-4f9f-4568-9c6f-db7990d2aaed	\N	78830a01-c14b-45df-bf8b-132eb1cc85d4	2026-02-14 18:11:35.295	6131	CASH	Payment for Utilities	2026-02-16 18:11:35.296	735.72	12	t	f
+84d4b63f-17c8-4f9f-ad7d-9e4b7f14b354	\N	a7a8fa8c-f200-4caf-938c-9628f21081fb	2026-01-03 18:11:35.357	1586	CASH	Payment for Loan EMI / Interest	2026-02-16 18:11:35.358	190.32	12	t	f
+0b25ecb4-fcf0-47cd-9fe6-53ca289a045b	\N	1ddb1646-b81a-4825-8065-4ba56064ec57	2025-12-29 18:11:35.412	3584	BANK	Payment for Marketing & Advertising	2026-02-16 18:11:35.413	430.08	12	t	f
+d9b49994-9414-449d-afdb-bcf6be36d902	\N	72b4ce48-ad6f-42fb-9fe1-3ae576cd8714	2026-02-13 18:11:35.464	3643	UPI	Payment for Professional Fees	2026-02-16 18:11:35.465	1020.04	28	t	f
+\.
+
+
+--
+-- Data for Name: ExpenseCategory; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public."ExpenseCategory" (id, name, "createdAt") FROM stdin;
+b86742e2-b382-4926-8975-620424400bc8	Raw Materials / Purchases	2026-02-16 18:11:31.643
+d790f0f7-335d-41d2-9a48-dfdda44e3e55	Supplier Payments	2026-02-16 18:11:31.694
+dbaec700-d83d-4d26-89d1-213ec22b6c21	Salaries & Wages	2026-02-16 18:11:31.746
+3f5bdd2b-2f7c-4bb6-a9b3-676b84dcd65a	Rent / Lease	2026-02-16 18:11:31.794
+78830a01-c14b-45df-bf8b-132eb1cc85d4	Utilities	2026-02-16 18:11:31.855
+0a47043c-baa3-468c-ab02-259bed3c7f7b	Transport & Logistics	2026-02-16 18:11:31.901
+3e443e56-a0f5-47d2-a364-fa62e86c128b	Packaging & Consumables	2026-02-16 18:11:31.958
+a7a8fa8c-f200-4caf-938c-9628f21081fb	Loan EMI / Interest	2026-02-16 18:11:32.013
+0cbc20a6-bbf2-4bb9-ab7d-de855dcc4361	Taxes & Statutory	2026-02-16 18:11:32.07
+cccc6be1-29e7-493a-84bb-e7abc284133c	Maintenance & Repairs	2026-02-16 18:11:32.13
+1ddb1646-b81a-4825-8065-4ba56064ec57	Marketing & Advertising	2026-02-16 18:11:32.18
+72b4ce48-ad6f-42fb-9fe1-3ae576cd8714	Professional Fees	2026-02-16 18:11:32.336
+9f640ef3-7795-4783-8dec-f1d45d9c41c6	Office Expenses	2026-02-16 18:11:32.396
+a061f26b-cf03-4674-ab0f-c0f17e393274	Miscellaneous	2026-02-16 18:11:32.455
+\.
+
+
+--
+-- Data for Name: FollowUp; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public."FollowUp" (id, "invoiceId", "followUpDate", method, status, notes, "nextFollowUpOn", "createdAt") FROM stdin;
+8105a12b-22da-4df7-9ed5-2ff5d3deed7a	c770d04a-0549-4afc-8e55-c01febe239ae	2026-02-17 18:11:21.037	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:21.092
+b2c0eded-1839-4a5a-9a8c-47fa9cd59ca7	d5405cb6-89ce-4c26-bbe0-d2772c675e6b	2026-02-20 18:11:21.403	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:21.486
+a3e15ecb-d7c6-49cb-844d-c35802d34e0e	6405fe46-8f9c-4ac5-a7bf-d8dc119f93b1	2026-02-20 18:11:21.701	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:21.776
+28ffa232-b6cc-43b0-8328-732b16465e29	b458739e-69b8-42f7-822e-e62754bf3693	2026-02-19 18:11:21.829	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:21.901
+c22f5e8c-2a6e-4ec3-9529-0d67a9cc377d	d3e44de9-1a04-4308-8ca9-a72fe48629b9	2026-02-20 18:11:21.949	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:22.017
+298afc38-69f5-4c3f-96c6-122beb56ec16	c1ba1de8-8376-4bd1-9715-4b82d5b719f4	2026-02-17 18:11:22.064	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:22.135
+6161aad1-6d9b-4902-82a6-2af0019e0b2f	0ac21499-5835-4982-b160-52e58bd3eefd	2026-02-17 18:11:23.175	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:23.456
+769e82a9-6868-412d-aa63-5d0e43bd61ad	92e1712d-895f-440a-83b3-029b4d6ef873	2026-02-20 18:11:23.516	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:23.641
+b231b1b6-3317-4955-b5b9-f8a8efc0e3e8	d9bcfcc2-2155-4976-b39c-74a293f192f3	2026-02-20 18:11:23.819	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:23.896
+1c3ec092-0ab6-4a71-8335-fb8e2fd0c7ca	c884643b-047f-4bb3-83ad-566304c71e49	2026-02-19 18:11:24.038	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:24.199
+5ceab5a3-5a93-4c26-8634-a010eae80aaa	4176694d-0fb9-413a-b44e-e5fa104c48c1	2026-02-17 18:11:24.388	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:24.45
+555e37fa-1838-4e52-9866-d6507d9ed881	c1954911-97fd-4bcf-9d36-ec53a772e3f6	2026-02-17 18:11:24.701	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:24.756
+fa31c871-6d97-4349-82e3-26aae76a9e4c	dd0616eb-de35-4972-82f2-022849766ec1	2026-02-18 18:11:25.361	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:25.422
+47a63d83-4cee-4e6a-a5ab-7a2cc4810897	ca7cbac9-436b-4cbe-bb42-5aa649b0c46c	2026-02-17 18:11:25.474	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:25.6
+3e0ddd59-87fd-490f-a497-4508b2b69a16	dc78a310-193b-4625-8125-4b85379ce721	2026-02-19 18:11:25.726	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:25.787
+73bd517e-7f54-4ac3-8a86-142fe816e1a8	aae5b22b-85f8-4639-ae3d-f06835d3e88f	2026-02-18 18:11:25.846	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:25.916
+eda493d2-d765-413d-8462-0a1a53c0a72a	fd8ed655-d5a8-4aa4-8506-7b26e368405a	2026-02-19 18:11:26.199	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:26.264
+b7970b72-3958-4ee7-9153-57c3805e8716	89bf42db-848c-44fb-b50c-1abcde96620d	2026-02-20 18:11:26.32	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:26.375
+70ba5db7-94b4-4ce7-bec4-1c2559f98b03	c297f648-f94d-4403-8975-356c6c435c91	2026-02-17 18:11:26.497	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:26.563
+75dce3fd-76c3-401a-98af-36b268eb3131	92c6b0d5-4636-4027-b5a3-71defe8b8c56	2026-02-17 18:11:26.616	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:26.665
+94a1acbc-fc7f-4f7e-8a60-e350efc78c8f	b11343fb-ee90-4747-abe1-b05bccfb0db1	2026-02-18 18:11:26.838	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:26.896
+9663cf8e-b603-4b78-9d00-9cc0cad03c63	48014a85-45d1-4df5-9c3a-4fe25c150b7d	2026-02-21 18:11:27.076	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:27.25
+b85cedd5-223a-4de2-924d-2ff91c955076	b1f4fe49-db2b-449c-9f0b-4c03b093cc97	2026-02-17 18:11:27.377	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:27.516
+f8ac05c9-030e-4e7a-95d5-c89620cfd31e	474c1874-f26a-47b1-b180-c757d5a3c8e1	2026-02-21 18:11:27.706	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:27.847
+1f28b5f1-9937-4019-9780-623e8f822cb7	266ec9dc-6c7f-4612-9083-db1fcfbdab4e	2026-02-17 18:11:27.899	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:27.953
+36cd49cb-e187-4197-85bf-48f6ed002ea6	92aa05c6-7e88-44fb-aef6-e8ba37560b6d	2026-02-17 18:11:28.292	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:28.412
+e1727c67-2027-4f53-af12-9a9b47c9e9f2	3307fd17-44de-454d-9d2d-22ee77bec245	2026-02-18 18:11:28.726	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:28.795
+490f8471-8129-4569-902d-747cfa763f43	ee32080a-da79-4d50-9c6d-87c931a0388a	2026-02-20 18:11:29.491	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:29.555
+e2e280a7-807d-4266-8ca5-7dc459f60410	6dfd74b2-9c45-4efe-b908-5759d94585b4	2026-02-19 18:11:29.615	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:29.666
+9310c27c-a0cd-450b-88af-5ffbfbc34fb2	63ab46f1-8f5d-44bb-9bb0-61b8735d0e90	2026-02-21 18:11:29.718	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:29.788
+2da85460-7f2f-4200-a011-8b41476368c1	ee00d1ce-ff83-4f37-bb4a-2e09473c1008	2026-02-20 18:11:29.846	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:29.986
+a57f63bf-2ba4-4c5f-ba3e-cc861e2217b8	2305ccd8-57b2-4e83-998d-b1896efb4cd9	2026-02-17 18:11:30.04	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:30.095
+657b2466-9fb9-458c-8add-c1fc47b33609	493c2ea7-8bfd-436b-90f5-2e6cda3e9043	2026-02-20 18:11:30.274	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:30.38
+e3aa5932-cf13-47e3-b095-cd5e0b732fa1	f1d78839-be52-4975-827b-487a322c6043	2026-02-18 18:11:30.434	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:30.498
+6d3d1ce3-4833-4847-b7c0-7cc9f8cd31c3	5954e66e-d5f1-4742-a28c-d520ddff99ef	2026-02-17 18:11:30.555	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:30.685
+ca61b9eb-dbb6-45f9-84fc-6c97e2ad5ddb	cab6f7c3-e944-43e2-b6e4-cb5d41773ef9	2026-02-20 18:11:30.865	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:30.921
+88074707-4123-4e9c-9dd6-c4687301c32a	9a164201-5ec9-4405-ad53-f61eecd114cc	2026-03-19 14:33:06.35	WHATSAPP	PROMISED	Follow up done	2026-03-27 00:00:00	2026-03-19 14:33:06.35
+dee977ea-fdc7-4421-9cd5-0742721be305	91d9c224-c446-4b04-8495-d2c2f7304605	2026-03-19 14:31:44.151	WHATSAPP	NO_RESPONSE	Followup done	2026-03-26 00:00:00	2026-03-19 14:31:44.151
+b267bb68-1877-4e03-832a-c5b904b1c1bd	87c71b77-2dca-4516-bcc8-b77a3fcd1a06	2026-02-19 18:11:15.194	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:15.257
+42cabd28-3b86-4d49-96c9-0e4b1d8aeba1	91d9c224-c446-4b04-8495-d2c2f7304605	2026-02-17 18:11:15.46	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:15.532
+d56290ac-9c46-4979-84e1-1de605c205ca	05134f3f-a77b-472c-accd-d2d59ae16278	2026-02-19 18:11:15.579	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:15.652
+7b8eb787-2fb3-4e54-9526-66bca53b1875	f548e5b6-00c2-4ef7-acf4-42696a14ce8a	2026-02-19 18:11:15.714	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:15.776
+e2a72743-a9cc-4710-a7cc-42de24293220	503e3f1e-28ff-4e1c-811d-f4adfa52f4bf	2026-02-19 18:11:15.845	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:15.915
+f718d931-ef4c-4f32-93ca-73de37a947aa	824ec5fd-4c3f-48d8-af71-2ddda2f5a0c7	2026-02-21 18:11:16.096	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:16.152
+4cf9f122-8502-4774-8124-2e2051361fe5	894e54c5-d185-4cc9-a756-a2ead6616c03	2026-02-21 18:11:16.334	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:16.391
+ac37d474-75a5-4739-a414-00e0ac094fbe	1eb9b309-fabb-417a-af88-495cec7e8834	2026-02-18 18:11:16.451	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:16.522
+bdba8719-8d38-44d6-9a4b-38a6ac9206ce	7198cd7b-1350-4217-9166-7eb908ea0a28	2026-02-19 18:11:16.639	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:16.697
+3c648112-17ef-4db9-b433-f4b0450326ee	f8d0a561-dc29-47a5-ab96-5b104294e5ac	2026-02-17 18:11:17.22	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:17.338
+08f9ee7b-eea0-4294-9d79-87f631225bef	8baba171-03c7-4874-a7b5-d45e8232c55c	2026-02-18 18:11:17.406	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:17.457
+1b4a784d-df24-47ce-90f8-df25d29eaaf7	bbac0c6a-daff-47ac-8c72-1dab32ceb0b0	2026-02-17 18:11:17.512	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:17.573
+25bbb9cd-5042-488b-ae91-3305ede09c01	b84143ac-d097-46bb-acb1-66caa67ddf98	2026-02-21 18:11:17.64	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:17.698
+6a46faa5-a473-4d15-8309-6c11b350aff9	fd82adc2-2908-4802-9d48-939f3e26b475	2026-02-19 18:11:17.758	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:17.821
+ab846ef3-a75c-4a14-91f3-80567ffe92cb	4efd7966-1b10-4e22-82c4-2a5260f09588	2026-02-17 18:11:18.021	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:18.093
+53ed04dd-5225-4290-aeec-526aa594f8e6	f5a7f39e-ab25-4681-89f5-b493facdb886	2026-02-19 18:11:18.333	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:18.395
+c63474e1-e49f-4524-932b-499f7fc528aa	ca8256b8-9edd-4204-9195-a607cf768917	2026-02-21 18:11:18.785	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:18.846
+ce9c473b-6ee0-4881-a2e2-3a53fa13e64f	f3168e64-691a-44cd-b98f-6a409c8b0167	2026-02-19 18:11:18.894	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:18.963
+b3ba0fb4-8694-43f3-a4a1-3845af5e07e7	dcb2ebd2-07e4-48ae-970f-c27e499369eb	2026-02-19 18:11:19.025	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:19.078
+233dfa83-9554-4957-a5b6-7ab6d48d0b3d	f2b4eb4f-b2ce-4399-aec2-ecb218632267	2026-02-17 18:11:19.13	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:19.192
+92272c82-4838-4ddc-a0c1-2b4ffae3542c	e13740bd-2d9a-4d0e-988b-40ba832fef1c	2026-02-20 18:11:19.379	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:19.438
+b6a1999a-79de-4cfc-8c20-0c7b70294485	25df22b3-3c55-42e3-82aa-44dbef0aedff	2026-02-20 18:11:19.621	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:19.683
+23a3ecb4-e92b-4308-9965-045a325c2ea0	06edc6c3-f80f-4ce9-8b01-1f77558fc11d	2026-02-17 18:11:19.89	CALL	SCHEDULED	Scheduled follow up call.	\N	2026-02-16 18:11:20.06
+\.
+
+
+--
+-- Data for Name: Invoice; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public."Invoice" (id, "customerId", "invoiceNo", "invoiceDate", "dueDate", "outstandingAmount", status, "createdAt", "invoiceAmount", "paidAmount", "gstAmount", "gstRate", "isGstInclusive") FROM stdin;
+849e4218-dcac-42e6-b7d7-931b29b97252	2237034a-a618-4787-8d1e-aba0617806e7	INV-2026-8843-0	2025-12-09 18:11:15.032	2026-01-08 18:11:15.032	0	PAID	2026-02-16 18:11:15.043	11904	15237.12	3333.12	28	f
+87c71b77-2dca-4516-bcc8-b77a3fcd1a06	2237034a-a618-4787-8d1e-aba0617806e7	INV-2026-6391-1	2025-12-25 18:11:15.194	2026-01-24 18:11:15.194	6250.46	OVERDUE	2026-02-16 18:11:15.196	5297	0	953.46	18	f
+28a0e67e-fb87-4ec2-9bd3-b9f060233c71	2237034a-a618-4787-8d1e-aba0617806e7	INV-2026-3743-2	2026-01-01 18:11:15.312	2026-01-31 18:11:15.312	0	PAID	2026-02-16 18:11:15.316	28815	30255.75	1440.75	5	f
+91d9c224-c446-4b04-8495-d2c2f7304605	2237034a-a618-4787-8d1e-aba0617806e7	INV-2026-6795-3	2025-12-16 18:11:15.46	2026-01-15 18:11:15.46	39049.74	OVERDUE	2026-02-16 18:11:15.462	33093	0	5956.74	18	f
+05134f3f-a77b-472c-accd-d2d59ae16278	2237034a-a618-4787-8d1e-aba0617806e7	INV-2026-9914-4	2025-12-17 18:11:15.579	2026-01-16 18:11:15.579	47960.32	OVERDUE	2026-02-16 18:11:15.581	37469	0	10491.32	28	f
+f548e5b6-00c2-4ef7-acf4-42696a14ce8a	7f2e1dc1-7b3c-438f-8015-e03bc49b358a	INV-2026-4894-5	2025-12-31 18:11:15.714	2026-01-15 18:11:15.714	13181	OVERDUE	2026-02-16 18:11:15.716	13181	0	0	0	f
+503e3f1e-28ff-4e1c-811d-f4adfa52f4bf	7f2e1dc1-7b3c-438f-8015-e03bc49b358a	INV-2026-1231-6	2026-01-05 18:11:15.845	2026-01-20 18:11:15.845	61816.32	OVERDUE	2026-02-16 18:11:15.846	48294	0	13522.32	28	f
+c0c1ddb8-62a0-49a8-87e7-d63b0bf9d508	7f2e1dc1-7b3c-438f-8015-e03bc49b358a	INV-2026-6383-7	2026-02-10 18:11:15.968	2026-02-25 18:11:15.968	0	PAID	2026-02-16 18:11:15.97	12261	12874.05	613.05	5	f
+824ec5fd-4c3f-48d8-af71-2ddda2f5a0c7	7f2e1dc1-7b3c-438f-8015-e03bc49b358a	INV-2026-7816-8	2026-01-02 18:11:16.096	2026-01-17 18:11:16.096	19608.06	OVERDUE	2026-02-16 18:11:16.098	16617	0	2991.06	18	f
+27007a2c-0f30-4635-879c-064bc2a99b63	7f2e1dc1-7b3c-438f-8015-e03bc49b358a	INV-2026-2414-9	2026-02-13 18:11:16.202	2026-02-28 18:11:16.202	0	PAID	2026-02-16 18:11:16.203	25858	28960.96	3102.96	12	f
+894e54c5-d185-4cc9-a756-a2ead6616c03	7f2e1dc1-7b3c-438f-8015-e03bc49b358a	INV-2026-2847-10	2026-01-21 18:11:16.334	2026-02-05 18:11:16.334	40464.56	OVERDUE	2026-02-16 18:11:16.336	34292	0	6172.56	18	f
+1eb9b309-fabb-417a-af88-495cec7e8834	7f2e1dc1-7b3c-438f-8015-e03bc49b358a	INV-2026-7130-11	2026-01-22 18:11:16.451	2026-02-06 18:11:16.451	6654.02	OVERDUE	2026-02-16 18:11:16.453	5639	0	1015.02	18	f
+f5165b0a-a628-4b16-bff4-3bf3418e7df6	40d418f1-f9ed-48c1-a332-0463609bb3b0	INV-2026-1364-12	2026-02-04 18:11:16.58	2026-04-05 18:11:16.58	15541.76	UNPAID	2026-02-16 18:11:16.582	12142	0	3399.76	28	f
+7198cd7b-1350-4217-9166-7eb908ea0a28	40d418f1-f9ed-48c1-a332-0463609bb3b0	INV-2026-8661-13	2025-11-21 18:11:16.639	2026-01-20 18:11:16.639	57515.56	OVERDUE	2026-02-16 18:11:16.641	48742	0	8773.56	18	f
+04b7246f-decb-4af1-9aec-c246ac0bf92e	40d418f1-f9ed-48c1-a332-0463609bb3b0	INV-2026-8631-14	2026-01-12 18:11:16.746	2026-03-13 18:11:16.746	0	PAID	2026-02-16 18:11:16.748	35861	35861	0	0	f
+9df7fade-08ea-48ae-bf48-07f4b42ee542	40d418f1-f9ed-48c1-a332-0463609bb3b0	INV-2026-7683-15	2026-02-07 18:11:16.859	2026-04-08 18:11:16.859	7865	UNPAID	2026-02-16 18:11:16.86	7865	0	0	0	f
+4287456a-0b89-4398-a6e1-c8d84592d7b3	40d418f1-f9ed-48c1-a332-0463609bb3b0	INV-2026-5325-16	2026-01-23 18:11:16.915	2026-03-24 18:11:16.915	0	PAID	2026-02-16 18:11:16.916	22663	22663	0	0	f
+aca63bc4-3c1f-4e30-96a6-6ea60b5dfb8b	40d418f1-f9ed-48c1-a332-0463609bb3b0	INV-2026-5122-17	2026-01-18 18:11:17.042	2026-03-19 18:11:17.042	24624.6	UNPAID	2026-02-16 18:11:17.044	23452	0	1172.6	5	f
+120eadf3-7b52-428d-a540-636602050cb2	40d418f1-f9ed-48c1-a332-0463609bb3b0	INV-2026-6776-18	2026-02-01 18:11:17.095	2026-04-02 18:11:17.095	0	PAID	2026-02-16 18:11:17.096	1939	1939	0	0	f
+f8d0a561-dc29-47a5-ab96-5b104294e5ac	9fc442b9-2748-4ac9-aa0d-89b0912283b5	INV-2026-2899-19	2025-12-26 18:11:17.22	2026-01-10 18:11:17.22	3437.32	PARTIAL	2026-02-16 18:11:17.222	31311	31631	3757.32	12	f
+8baba171-03c7-4874-a7b5-d45e8232c55c	9fc442b9-2748-4ac9-aa0d-89b0912283b5	INV-2026-8009-20	2025-12-31 18:11:17.406	2026-01-15 18:11:17.406	49703.68	OVERDUE	2026-02-16 18:11:17.408	38831	0	10872.68	28	f
+bbac0c6a-daff-47ac-8c72-1dab32ceb0b0	9fc442b9-2748-4ac9-aa0d-89b0912283b5	INV-2026-2149-21	2025-12-20 18:11:17.512	2026-01-04 18:11:17.512	14633	OVERDUE	2026-02-16 18:11:17.514	14633	0	0	0	f
+b84143ac-d097-46bb-acb1-66caa67ddf98	9fc442b9-2748-4ac9-aa0d-89b0912283b5	INV-2026-9531-22	2026-01-09 18:11:17.64	2026-01-24 18:11:17.64	62403.84	OVERDUE	2026-02-16 18:11:17.642	48753	0	13650.84	28	f
+fd82adc2-2908-4802-9d48-939f3e26b475	9fc442b9-2748-4ac9-aa0d-89b0912283b5	INV-2026-9694-23	2025-12-20 18:11:17.758	2026-01-04 18:11:17.758	15825.6	OVERDUE	2026-02-16 18:11:17.759	14130	0	1695.6	12	f
+75a14b29-d81d-4d97-b6f5-6333e58aba21	9fc442b9-2748-4ac9-aa0d-89b0912283b5	INV-2026-2358-24	2025-12-02 18:11:17.887	2025-12-17 18:11:17.887	0	PAID	2026-02-16 18:11:17.889	35140	41465.2	6325.2	18	f
+4efd7966-1b10-4e22-82c4-2a5260f09588	5317e3ec-7ff7-42a5-b997-c86222e30985	INV-2026-4281-25	2025-12-11 18:11:18.021	2026-01-10 18:11:18.021	57206.4	OVERDUE	2026-02-16 18:11:18.023	48480	0	8726.4	18	f
+631fb26d-6064-461a-8a12-fc8528687524	5317e3ec-7ff7-42a5-b997-c86222e30985	INV-2026-8457-26	2025-12-13 18:11:18.155	2026-01-12 18:11:18.155	0	PAID	2026-02-16 18:11:18.157	47100	52752	5652	12	f
+0bb76c9b-42bc-4970-9e6d-9f4bd8872fd1	5317e3ec-7ff7-42a5-b997-c86222e30985	INV-2026-3364-27	2026-01-31 18:11:18.272	2026-03-02 18:11:18.272	9422.08	UNPAID	2026-02-16 18:11:18.274	7361	0	2061.08	28	f
+f5a7f39e-ab25-4681-89f5-b493facdb886	e50b6b03-65c3-462a-951f-56fea19b5063	INV-2026-7329-28	2026-01-13 18:11:18.333	2026-01-28 18:11:18.333	40102.72	OVERDUE	2026-02-16 18:11:18.335	35806	0	4296.72	12	f
+af8f7397-6d3c-4d4d-8730-a38456c376c4	e50b6b03-65c3-462a-951f-56fea19b5063	INV-2026-5484-29	2026-02-02 18:11:18.455	2026-02-17 18:11:18.455	0	PAID	2026-02-16 18:11:18.457	16804	21509.12	4705.12	28	f
+a4221e45-84e6-4f1c-b4a0-6656fe397141	e50b6b03-65c3-462a-951f-56fea19b5063	INV-2026-5400-30	2026-02-13 18:11:18.58	2026-02-28 18:11:18.58	31498.24	UNPAID	2026-02-16 18:11:18.582	24608	0	6890.24	28	f
+1bc2201c-4eea-4830-ae15-39e986f5ef7b	e50b6b03-65c3-462a-951f-56fea19b5063	INV-2026-4649-31	2026-01-18 18:11:18.65	2026-02-02 18:11:18.65	0	PAID	2026-02-16 18:11:18.651	32115	32115	0	0	f
+ca8256b8-9edd-4204-9195-a607cf768917	e50b6b03-65c3-462a-951f-56fea19b5063	INV-2026-9508-32	2026-01-22 18:11:18.785	2026-02-06 18:11:18.785	30885.12	OVERDUE	2026-02-16 18:11:18.787	24129	0	6756.12	28	f
+f3168e64-691a-44cd-b98f-6a409c8b0167	e50b6b03-65c3-462a-951f-56fea19b5063	INV-2026-6356-33	2025-12-15 18:11:18.894	2025-12-30 18:11:18.894	5694.15	OVERDUE	2026-02-16 18:11:18.896	5423	0	271.15	5	f
+dcb2ebd2-07e4-48ae-970f-c27e499369eb	e50b6b03-65c3-462a-951f-56fea19b5063	INV-2026-1501-34	2026-01-05 18:11:19.025	2026-01-20 18:11:19.025	2964.64	OVERDUE	2026-02-16 18:11:19.027	2647	0	317.64	12	f
+f2b4eb4f-b2ce-4399-aec2-ecb218632267	e50b6b03-65c3-462a-951f-56fea19b5063	INV-2026-7303-35	2025-11-24 18:11:19.13	2025-12-09 18:11:19.13	37304.32	OVERDUE	2026-02-16 18:11:19.131	29144	0	8160.32	28	f
+e3e24f1b-98db-4e7b-b67a-5ca3c9f535b9	922cf012-51aa-4e53-9444-fc2dc7f6b6aa	INV-2026-6164-36	2025-11-21 18:11:19.256	2025-12-06 18:11:19.256	0	PAID	2026-02-16 18:11:19.258	32004	40965.12	8961.12	28	f
+e13740bd-2d9a-4d0e-988b-40ba832fef1c	922cf012-51aa-4e53-9444-fc2dc7f6b6aa	INV-2026-7420-37	2025-11-28 18:11:19.379	2025-12-13 18:11:19.379	44506.56	OVERDUE	2026-02-16 18:11:19.38	39738	0	4768.56	12	f
+6d2551fc-65be-4ffb-bc3b-67848303cd5c	922cf012-51aa-4e53-9444-fc2dc7f6b6aa	INV-2026-6135-38	2025-12-29 18:11:19.499	2026-01-13 18:11:19.499	0	PAID	2026-02-16 18:11:19.501	1587	1587	0	0	f
+25df22b3-3c55-42e3-82aa-44dbef0aedff	922cf012-51aa-4e53-9444-fc2dc7f6b6aa	INV-2026-6346-39	2025-11-29 18:11:19.621	2025-12-14 18:11:19.621	49066.24	OVERDUE	2026-02-16 18:11:19.622	38333	0	10733.24	28	f
+a654c6c3-700f-48c6-9837-9c4ef17d6346	922cf012-51aa-4e53-9444-fc2dc7f6b6aa	INV-2026-7926-40	2025-11-22 18:11:19.739	2025-12-07 18:11:19.739	0	PAID	2026-02-16 18:11:19.741	40796	40796	0	0	f
+06edc6c3-f80f-4ce9-8b01-1f77558fc11d	922cf012-51aa-4e53-9444-fc2dc7f6b6aa	INV-2026-2156-41	2025-12-19 18:11:19.89	2026-01-03 18:11:19.89	12046.6	PARTIAL	2026-02-16 18:11:19.891	19632	8567	981.6	5	f
+a85cbdfd-a97f-4f5f-85d8-087b7bac32ab	000037ce-70d1-452e-8b03-441a7dcc2572	INV-2026-9853-42	2026-01-06 18:11:20.215	2026-02-20 18:11:20.215	37860.9	UNPAID	2026-02-16 18:11:20.216	36058	0	1802.9	5	f
+d88f18ab-b617-4ba3-a800-27cba92baaf7	000037ce-70d1-452e-8b03-441a7dcc2572	INV-2026-2472-43	2026-01-25 18:11:20.557	2026-03-11 18:11:20.557	0	PAID	2026-02-16 18:11:20.558	40246	47490.28	7244.28	18	f
+c770d04a-0549-4afc-8e55-c01febe239ae	000037ce-70d1-452e-8b03-441a7dcc2572	INV-2026-9606-44	2025-11-30 18:11:21.037	2026-01-14 18:11:21.037	12788	OVERDUE	2026-02-16 18:11:21.038	12788	0	0	0	f
+19a120ae-a9ad-48f9-86e9-0c379c8e3b08	000037ce-70d1-452e-8b03-441a7dcc2572	INV-2026-5443-45	2026-01-11 18:11:21.15	2026-02-25 18:11:21.15	21669.76	UNPAID	2026-02-16 18:11:21.151	19348	0	2321.76	12	f
+f7fcc9b0-0dfe-4a14-b868-99507ea43a0c	36f0759f-6282-4940-91fe-c8392a791d8c	INV-2026-9645-46	2025-11-24 18:11:21.226	2026-01-08 18:11:21.226	0	PAID	2026-02-16 18:11:21.229	23772	28050.96	4278.96	18	f
+9edc988f-10d8-4958-a330-1a041f5a9f97	36f0759f-6282-4940-91fe-c8392a791d8c	INV-2026-5846-47	2026-01-31 18:11:21.347	2026-03-17 18:11:21.347	10319.36	UNPAID	2026-02-16 18:11:21.349	8062	0	2257.36	28	f
+d5405cb6-89ce-4c26-bbe0-d2772c675e6b	36f0759f-6282-4940-91fe-c8392a791d8c	INV-2026-9490-48	2025-11-19 18:11:21.403	2026-01-03 18:11:21.403	8566	OVERDUE	2026-02-16 18:11:21.406	8566	0	0	0	f
+7ba61cb8-16fc-4a36-a7a4-7cde24e0dfdb	36f0759f-6282-4940-91fe-c8392a791d8c	INV-2026-4905-49	2025-11-29 18:11:21.569	2026-01-13 18:11:21.569	0	PAID	2026-02-16 18:11:21.571	26760	34252.8	7492.8	28	f
+6405fe46-8f9c-4ac5-a7bf-d8dc119f93b1	98edac12-7d54-4e96-a0a5-8ec9fcb3782d	INV-2026-2366-50	2025-11-20 18:11:21.701	2025-12-05 18:11:21.701	29751.75	OVERDUE	2026-02-16 18:11:21.702	28335	0	1416.75	5	f
+b458739e-69b8-42f7-822e-e62754bf3693	98edac12-7d54-4e96-a0a5-8ec9fcb3782d	INV-2026-7562-51	2025-12-10 18:11:21.829	2025-12-25 18:11:21.829	36500.1	OVERDUE	2026-02-16 18:11:21.832	34762	0	1738.1	5	f
+d3e44de9-1a04-4308-8ca9-a72fe48629b9	98edac12-7d54-4e96-a0a5-8ec9fcb3782d	INV-2026-3734-52	2026-01-22 18:11:21.949	2026-02-06 18:11:21.949	11903.85	OVERDUE	2026-02-16 18:11:21.95	11337	0	566.85	5	f
+c1ba1de8-8376-4bd1-9715-4b82d5b719f4	98edac12-7d54-4e96-a0a5-8ec9fcb3782d	INV-2026-8338-53	2025-12-28 18:11:22.064	2026-01-12 18:11:22.064	49471.8	OVERDUE	2026-02-16 18:11:22.066	47116	0	2355.8	5	f
+7b174eee-d8f4-4b60-a917-71103a43b8c9	98edac12-7d54-4e96-a0a5-8ec9fcb3782d	INV-2026-4788-54	2026-02-06 18:11:22.204	2026-02-21 18:11:22.204	2621.92	UNPAID	2026-02-16 18:11:22.206	2341	0	280.92	12	f
+fec11f06-3a3a-41c1-88f7-c6ba0cad740b	98edac12-7d54-4e96-a0a5-8ec9fcb3782d	INV-2026-5465-55	2026-02-16 18:11:22.277	2026-03-03 18:11:22.277	0	PAID	2026-02-16 18:11:22.279	27222	30488.64	3266.64	12	f
+492ae30f-095c-4476-b75a-c5385f3c7f79	df9cbd1f-418f-487e-a48d-a833be5a5427	INV-2026-4850-56	2026-01-31 18:11:22.42	2026-03-02 18:11:22.42	0	PAID	2026-02-16 18:11:22.426	49847	49847	0	0	f
+8c546741-d394-47da-a6ee-783f5cf21138	df9cbd1f-418f-487e-a48d-a833be5a5427	INV-2026-1638-57	2025-12-17 18:11:22.585	2026-01-16 18:11:22.585	0	PAID	2026-02-16 18:11:22.587	32428	36319.36	3891.36	12	f
+0ac21499-5835-4982-b160-52e58bd3eefd	df9cbd1f-418f-487e-a48d-a833be5a5427	INV-2026-9173-58	2025-11-19 18:11:23.175	2025-12-19 18:11:23.175	7263.2	OVERDUE	2026-02-16 18:11:23.176	6485	0	778.2	12	f
+92e1712d-895f-440a-83b3-029b4d6ef873	df9cbd1f-418f-487e-a48d-a833be5a5427	INV-2026-9497-59	2025-12-19 18:11:23.516	2026-01-18 18:11:23.516	10814.05	PARTIAL	2026-02-16 18:11:23.517	30761	21485	1538.05	5	f
+06b0663a-6572-48a9-b70f-23888e850266	df9cbd1f-418f-487e-a48d-a833be5a5427	INV-2026-4940-60	2026-01-19 18:11:23.699	2026-02-18 18:11:23.699	0	PAID	2026-02-16 18:11:23.699	16446	17268.3	822.3	5	f
+d9bcfcc2-2155-4976-b39c-74a293f192f3	df9cbd1f-418f-487e-a48d-a833be5a5427	INV-2026-4631-61	2025-12-06 18:11:23.819	2026-01-05 18:11:23.819	47363	OVERDUE	2026-02-16 18:11:23.82	47363	0	0	0	f
+c7fc1a34-b791-4d87-933a-df7551cb6ad3	9b6e19b1-8d03-4950-bc14-921dc21c9b28	INV-2026-3436-62	2026-02-15 18:11:23.973	2026-04-16 18:11:23.973	43479.45	UNPAID	2026-02-16 18:11:23.974	41409	0	2070.45	5	f
+c884643b-047f-4bb3-83ad-566304c71e49	9b6e19b1-8d03-4950-bc14-921dc21c9b28	INV-2026-8302-63	2025-11-24 18:11:24.038	2026-01-23 18:11:24.038	1128.940000000001	PARTIAL	2026-02-16 18:11:24.039	12283	13365	2210.94	18	f
+c8f11c5a-6a31-4cbd-a745-d23c41a97b05	9b6e19b1-8d03-4950-bc14-921dc21c9b28	INV-2026-9416-64	2026-02-13 18:11:24.259	2026-04-14 18:11:24.259	0	PAID	2026-02-16 18:11:24.26	9924	9924	0	0	f
+4176694d-0fb9-413a-b44e-e5fa104c48c1	9b6e19b1-8d03-4950-bc14-921dc21c9b28	INV-2026-4490-65	2025-12-01 18:11:24.388	2026-01-30 18:11:24.388	44675.68	OVERDUE	2026-02-16 18:11:24.389	39889	0	4786.68	12	f
+9c7df343-552a-4fc1-9647-d58c38522699	9b6e19b1-8d03-4950-bc14-921dc21c9b28	INV-2026-1693-66	2026-01-17 18:11:24.51	2026-03-18 18:11:24.51	0	PAID	2026-02-16 18:11:24.51	19302	19302	0	0	f
+fb0a55cd-75ab-4dc8-89d8-8b9caa956149	9b6e19b1-8d03-4950-bc14-921dc21c9b28	INV-2026-7939-67	2025-12-22 18:11:24.636	2026-02-20 18:11:24.636	37414.26	UNPAID	2026-02-16 18:11:24.636	31707	0	5707.26	18	f
+c1954911-97fd-4bcf-9d36-ec53a772e3f6	96ea192f-9218-4c8d-90bf-0a1d14f1b094	INV-2026-4586-68	2025-12-07 18:11:24.701	2026-02-05 18:11:24.701	19770	OVERDUE	2026-02-16 18:11:24.702	19770	0	0	0	f
+802b11bb-431b-4e5e-a8dc-fd4fa1e81203	96ea192f-9218-4c8d-90bf-0a1d14f1b094	INV-2026-9419-69	2026-01-31 18:11:24.826	2026-04-01 18:11:24.826	0	PAID	2026-02-16 18:11:24.827	45013	57616.64	12603.64	28	f
+2a14a22f-815c-47b0-960e-8feccec58cbb	96ea192f-9218-4c8d-90bf-0a1d14f1b094	INV-2026-6512-70	2026-01-18 18:11:24.936	2026-03-19 18:11:24.936	14645.76	UNPAID	2026-02-16 18:11:24.937	11442	0	3203.76	28	f
+2c622559-d3e7-4469-be74-26beed677aaa	96ea192f-9218-4c8d-90bf-0a1d14f1b094	INV-2026-2938-71	2025-12-23 18:11:24.996	2026-02-21 18:11:24.996	22873.2	UNPAID	2026-02-16 18:11:24.997	21784	0	1089.2	5	f
+c32cf437-25a3-4e83-b41a-73c29e3fdf4b	96ea192f-9218-4c8d-90bf-0a1d14f1b094	INV-2026-3910-72	2026-02-09 18:11:25.19	2026-04-10 18:11:25.19	32330	UNPAID	2026-02-16 18:11:25.19	32330	0	0	0	f
+5ef5465d-360d-495e-b037-ceed8a4a529c	96ea192f-9218-4c8d-90bf-0a1d14f1b094	INV-2026-6935-73	2026-01-14 18:11:25.25	2026-03-15 18:11:25.25	0	PAID	2026-02-16 18:11:25.251	23029	27174.22	4145.22	18	f
+dd0616eb-de35-4972-82f2-022849766ec1	5988b1bc-9574-473e-a249-ce2858100770	INV-2026-7695-74	2025-12-10 18:11:25.361	2026-01-09 18:11:25.361	35448	OVERDUE	2026-02-16 18:11:25.362	35448	0	0	0	f
+ca7cbac9-436b-4cbe-bb42-5aa649b0c46c	5988b1bc-9574-473e-a249-ce2858100770	INV-2026-9696-75	2025-11-23 18:11:25.474	2025-12-23 18:11:25.474	5083	PARTIAL	2026-02-16 18:11:25.475	18815	13732	0	0	f
+a4f2c75e-7ab9-4d47-b276-ce736a0170f0	5988b1bc-9574-473e-a249-ce2858100770	INV-2026-7136-76	2026-01-20 18:11:25.656	2026-02-19 18:11:25.656	38397	UNPAID	2026-02-16 18:11:25.657	38397	0	0	0	f
+dc78a310-193b-4625-8125-4b85379ce721	5988b1bc-9574-473e-a249-ce2858100770	INV-2026-9260-77	2025-11-21 18:11:25.726	2025-12-21 18:11:25.726	28468	OVERDUE	2026-02-16 18:11:25.727	28468	0	0	0	f
+aae5b22b-85f8-4639-ae3d-f06835d3e88f	5988b1bc-9574-473e-a249-ce2858100770	INV-2026-8930-78	2025-12-16 18:11:25.846	2026-01-15 18:11:25.846	60811.52	OVERDUE	2026-02-16 18:11:25.847	47509	0	13302.52	28	f
+25af3344-992b-489f-be20-39eccc86f104	5988b1bc-9574-473e-a249-ce2858100770	INV-2026-1373-79	2026-02-01 18:11:25.973	2026-03-03 18:11:25.973	0	PAID	2026-02-16 18:11:25.974	43682	43682	0	0	f
+158c2ee0-5a69-4dcf-ad28-a6fad48120f6	ae39afa5-6774-429b-9d20-7fd7f8f500ba	INV-2026-7720-80	2026-01-15 18:11:26.081	2026-03-01 18:11:26.081	0	PAID	2026-02-16 18:11:26.082	6463	8272.64	1809.64	28	f
+fd8ed655-d5a8-4aa4-8506-7b26e368405a	ae39afa5-6774-429b-9d20-7fd7f8f500ba	INV-2026-3074-81	2025-12-30 18:11:26.199	2026-02-13 18:11:26.199	20286.72	OVERDUE	2026-02-16 18:11:26.199	15849	0	4437.72	28	f
+89bf42db-848c-44fb-b50c-1abcde96620d	ae39afa5-6774-429b-9d20-7fd7f8f500ba	INV-2026-8164-82	2025-12-04 18:11:26.32	2026-01-18 18:11:26.32	2315.16	OVERDUE	2026-02-16 18:11:26.32	1962	0	353.16	18	f
+ecdfe414-d68c-49b7-b8b2-7a251a523dc0	ae39afa5-6774-429b-9d20-7fd7f8f500ba	INV-2026-5113-83	2026-02-09 18:11:26.441	2026-03-26 18:11:26.441	20596.9	UNPAID	2026-02-16 18:11:26.441	17455	0	3141.9	18	f
+c297f648-f94d-4403-8975-356c6c435c91	ae39afa5-6774-429b-9d20-7fd7f8f500ba	INV-2026-8175-84	2025-11-30 18:11:26.497	2026-01-14 18:11:26.497	4669	OVERDUE	2026-02-16 18:11:26.498	4669	0	0	0	f
+92c6b0d5-4636-4027-b5a3-71defe8b8c56	ae39afa5-6774-429b-9d20-7fd7f8f500ba	INV-2026-7336-85	2025-12-11 18:11:26.616	2026-01-25 18:11:26.616	27621.12	OVERDUE	2026-02-16 18:11:26.617	21579	0	6042.12	28	f
+703a2633-e524-4d5a-aa66-eabb294f6e1e	ae39afa5-6774-429b-9d20-7fd7f8f500ba	INV-2026-8995-86	2025-11-29 18:11:26.716	2026-01-13 18:11:26.716	0	PAID	2026-02-16 18:11:26.717	14469	15192.45	723.45	5	f
+b11343fb-ee90-4747-abe1-b05bccfb0db1	ae39afa5-6774-429b-9d20-7fd7f8f500ba	INV-2026-8522-87	2025-12-18 18:11:26.838	2026-02-01 18:11:26.838	13524	OVERDUE	2026-02-16 18:11:26.839	12075	0	1449	12	f
+a80067bc-1cbb-43cf-993e-d65d216ba7d2	78cc21a9-39a8-4e67-9f67-75a143f4ddca	INV-2026-5505-88	2026-01-15 18:11:26.956	2026-03-01 18:11:26.956	0	PAID	2026-02-16 18:11:26.957	11653	13750.54	2097.54	18	f
+48014a85-45d1-4df5-9c3a-4fe25c150b7d	78cc21a9-39a8-4e67-9f67-75a143f4ddca	INV-2026-3113-89	2025-12-25 18:11:27.076	2026-02-08 18:11:27.076	16884.8	PARTIAL	2026-02-16 18:11:27.077	25460	13158	4582.8	18	f
+b1f4fe49-db2b-449c-9f0b-4c03b093cc97	78cc21a9-39a8-4e67-9f67-75a143f4ddca	INV-2026-6829-90	2026-02-13 18:11:27.377	2026-03-30 18:11:27.377	30472.95	PARTIAL	2026-02-16 18:11:27.378	34079	5310	1703.95	5	f
+b226f95c-b15a-48bb-922a-9b08ac727b3a	78cc21a9-39a8-4e67-9f67-75a143f4ddca	INV-2026-7056-91	2026-01-29 18:11:27.572	2026-03-15 18:11:27.572	0	PAID	2026-02-16 18:11:27.573	13270	13270	0	0	f
+474c1874-f26a-47b1-b180-c757d5a3c8e1	78cc21a9-39a8-4e67-9f67-75a143f4ddca	INV-2026-8265-92	2025-12-14 18:11:27.705	2026-01-28 18:11:27.705	3100	PARTIAL	2026-02-16 18:11:27.707	39143	36043	0	0	f
+266ec9dc-6c7f-4612-9083-db1fcfbdab4e	78cc21a9-39a8-4e67-9f67-75a143f4ddca	INV-2026-8958-93	2025-12-25 18:11:27.899	2026-02-08 18:11:27.899	24368.18	OVERDUE	2026-02-16 18:11:27.9	20651	0	3717.18	18	f
+5e348a3c-fc95-42c9-ab50-cf068d4a737c	78cc21a9-39a8-4e67-9f67-75a143f4ddca	INV-2026-6307-94	2025-11-27 18:11:28.001	2026-01-11 18:11:28.001	0	PAID	2026-02-16 18:11:28.003	6961	7309.05	348.05	5	f
+b69bfeb0-0823-4a43-a627-18490110f5a1	78cc21a9-39a8-4e67-9f67-75a143f4ddca	INV-2026-8021-95	2025-12-27 18:11:28.125	2026-02-10 18:11:28.125	0	PAID	2026-02-16 18:11:28.126	31258	32820.9	1562.9	5	f
+d39d4602-7f01-4cbe-ae41-227d4b648220	be63df79-5e53-4563-a054-2c85a4903fd8	INV-2026-9580-96	2026-01-31 18:11:28.232	2026-03-17 18:11:28.232	16168.36	UNPAID	2026-02-16 18:11:28.233	13702	0	2466.36	18	f
+92aa05c6-7e88-44fb-aef6-e8ba37560b6d	be63df79-5e53-4563-a054-2c85a4903fd8	INV-2026-5506-97	2025-12-22 18:11:28.292	2026-02-05 18:11:28.292	11541.9	PARTIAL	2026-02-16 18:11:28.293	25218	14937	1260.9	5	f
+64c4d48c-ed3a-4ca5-8baf-7d98a5c69e47	be63df79-5e53-4563-a054-2c85a4903fd8	INV-2026-9241-98	2026-01-17 18:11:28.466	2026-03-03 18:11:28.466	7758.45	UNPAID	2026-02-16 18:11:28.468	7389	0	369.45	5	f
+8fd631db-3acc-4935-8576-55397e4397be	be63df79-5e53-4563-a054-2c85a4903fd8	INV-2026-2937-99	2026-01-13 18:11:28.526	2026-02-27 18:11:28.526	34612	UNPAID	2026-02-16 18:11:28.527	34612	0	0	0	f
+94f4942b-fef1-49b6-87f5-134d855fd468	be63df79-5e53-4563-a054-2c85a4903fd8	INV-2026-2048-100	2025-12-03 18:11:28.606	2026-01-17 18:11:28.606	0	PAID	2026-02-16 18:11:28.607	44280	52250.4	7970.4	18	f
+3307fd17-44de-454d-9d2d-22ee77bec245	be63df79-5e53-4563-a054-2c85a4903fd8	INV-2026-5567-101	2025-12-05 18:11:28.726	2026-01-19 18:11:28.726	43462.94	OVERDUE	2026-02-16 18:11:28.727	36833	0	6629.94	18	f
+b49495db-c01e-4062-b92f-93b8579cd1d5	1d95a161-99ba-4f6d-9092-2f3069d0faa1	INV-2026-5380-102	2026-02-03 18:11:28.863	2026-04-04 18:11:28.863	3916.8	UNPAID	2026-02-16 18:11:28.865	3060	0	856.8	28	f
+1756255c-85a8-4c13-b654-7e62347e71dd	1d95a161-99ba-4f6d-9092-2f3069d0faa1	INV-2026-7638-103	2025-11-21 18:11:28.92	2026-01-20 18:11:28.92	0	PAID	2026-02-16 18:11:28.922	35244	45112.32	9868.32	28	f
+89e00d3d-bd4d-43f1-895f-1e35855b2d19	1d95a161-99ba-4f6d-9092-2f3069d0faa1	INV-2026-9742-104	2026-01-12 18:11:29.029	2026-03-13 18:11:29.029	42348	UNPAID	2026-02-16 18:11:29.03	42348	0	0	0	f
+bc3d58fc-2c42-4a85-95e8-509304e07f3f	1d95a161-99ba-4f6d-9092-2f3069d0faa1	INV-2026-3270-105	2025-12-18 18:11:29.077	2026-02-16 18:11:29.077	0	PAID	2026-02-16 18:11:29.078	43631	55847.68	12216.68	28	f
+664570ff-675a-4bfd-979c-8377b65462b7	1d95a161-99ba-4f6d-9092-2f3069d0faa1	INV-2026-9812-106	2025-12-20 18:11:29.194	2026-02-18 18:11:29.194	57338.56	UNPAID	2026-02-16 18:11:29.196	48592	0	8746.56	18	f
+e2a26110-982b-4817-bc6b-38eea3ad3d2e	1d95a161-99ba-4f6d-9092-2f3069d0faa1	INV-2026-9936-107	2025-11-24 18:11:29.257	2026-01-23 18:11:29.257	0	PAID	2026-02-16 18:11:29.258	34896	44666.88	9770.88	28	f
+946dca5c-bad2-4d4f-9a04-36461be63b05	1d95a161-99ba-4f6d-9092-2f3069d0faa1	INV-2026-6564-108	2026-01-06 18:11:29.37	2026-03-07 18:11:29.37	0	PAID	2026-02-16 18:11:29.371	31384	37033.12	5649.12	18	f
+ee32080a-da79-4d50-9c6d-87c931a0388a	0703a5fc-7002-42aa-ab2c-7a27fa2702a1	INV-2026-9084-109	2026-01-26 18:11:29.491	2026-02-10 18:11:29.491	12627.2	OVERDUE	2026-02-16 18:11:29.492	9865	0	2762.2	28	f
+6dfd74b2-9c45-4efe-b908-5759d94585b4	0703a5fc-7002-42aa-ab2c-7a27fa2702a1	INV-2026-5305-110	2025-12-13 18:11:29.615	2025-12-28 18:11:29.615	25512.9	OVERDUE	2026-02-16 18:11:29.616	24298	0	1214.9	5	f
+63ab46f1-8f5d-44bb-9bb0-61b8735d0e90	0703a5fc-7002-42aa-ab2c-7a27fa2702a1	INV-2026-3904-111	2025-11-19 18:11:29.718	2025-12-04 18:11:29.718	20120.18	OVERDUE	2026-02-16 18:11:29.72	17051	0	3069.18	18	f
+ee00d1ce-ff83-4f37-bb4a-2e09473c1008	0703a5fc-7002-42aa-ab2c-7a27fa2702a1	INV-2026-5171-112	2026-02-12 18:11:29.846	2026-02-27 18:11:29.846	12348.55	PARTIAL	2026-02-16 18:11:29.848	40491	30167	2024.55	5	f
+2305ccd8-57b2-4e83-998d-b1896efb4cd9	0703a5fc-7002-42aa-ab2c-7a27fa2702a1	INV-2026-7842-113	2025-12-03 18:11:30.04	2025-12-18 18:11:30.04	3780.72	OVERDUE	2026-02-16 18:11:30.042	3204	0	576.72	18	f
+1d4c93fd-465f-4831-b795-014f4d5514b6	4619b24d-e6b2-4871-940b-68af58fb532a	INV-2026-1385-114	2026-02-07 18:11:30.16	2026-02-22 18:11:30.16	33789.3	UNPAID	2026-02-16 18:11:30.161	28635	0	5154.3	18	f
+a8d2d85c-a897-49d3-8ac8-7222bb0a84db	4619b24d-e6b2-4871-940b-68af58fb532a	INV-2026-8816-115	2026-02-11 18:11:30.221	2026-02-26 18:11:30.221	53728.64	UNPAID	2026-02-16 18:11:30.223	47972	0	5756.64	12	f
+493c2ea7-8bfd-436b-90f5-2e6cda3e9043	4619b24d-e6b2-4871-940b-68af58fb532a	INV-2026-4191-116	2026-01-15 18:11:30.274	2026-01-30 18:11:30.274	786.2399999999998	PARTIAL	2026-02-16 18:11:30.276	2652	2184	318.24	12	f
+f1d78839-be52-4975-827b-487a322c6043	4619b24d-e6b2-4871-940b-68af58fb532a	INV-2026-8685-117	2025-12-30 18:11:30.434	2026-01-14 18:11:30.434	18313.6	OVERDUE	2026-02-16 18:11:30.436	15520	0	2793.6	18	f
+5954e66e-d5f1-4742-a28c-d520ddff99ef	4619b24d-e6b2-4871-940b-68af58fb532a	INV-2026-7928-118	2025-12-04 18:11:30.555	2025-12-19 18:11:30.555	15208.2	PARTIAL	2026-02-16 18:11:30.556	24784	10815	1239.2	5	f
+f7e00ffb-38c2-4d64-be48-2c0cc00d7ca1	4619b24d-e6b2-4871-940b-68af58fb532a	INV-2026-1640-119	2025-12-22 18:11:30.736	2026-01-06 18:11:30.736	0	PAID	2026-02-16 18:11:30.737	46228	59171.84	12943.84	28	f
+cab6f7c3-e944-43e2-b6e4-cb5d41773ef9	4619b24d-e6b2-4871-940b-68af58fb532a	INV-2026-2770-120	2025-12-24 18:11:30.865	2026-01-08 18:11:30.865	7294.35	OVERDUE	2026-02-16 18:11:30.867	6947	0	347.35	5	f
+9c1a7f66-6663-420a-a294-cbfe59711b51	4619b24d-e6b2-4871-940b-68af58fb532a	INV-2026-6534-121	2026-02-03 18:11:30.985	2026-02-18 18:11:30.985	0	PAID	2026-02-16 18:11:30.986	42243	47312.16	5069.16	12	f
+9a164201-5ec9-4405-ad53-f61eecd114cc	5317e3ec-7ff7-42a5-b997-c86222e30985	122-i	2026-03-19 00:00:00	2026-04-18 00:00:00	20000	PARTIAL	2026-03-19 14:28:25.495	42372.88135593221	30000	7627.118644067792	18	t
+\.
+
+
+--
+-- Data for Name: PaymentEntry; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public."PaymentEntry" (id, "invoiceId", amount, "paymentDate", method, reference, notes, "createdAt") FROM stdin;
+4fa035f8-75a5-4c37-86b2-e1d62b554c07	d88f18ab-b617-4ba3-a800-27cba92baaf7	47490.28	2026-01-27 18:11:20.557	UPI	REF-11294	Seed payment	2026-02-16 18:11:20.939
+7c60fecd-3e82-4eb8-9a10-ab6401bb6faa	f7fcc9b0-0dfe-4a14-b868-99507ea43a0c	28050.96	2025-11-28 18:11:21.226	CASH	REF-92917	Seed payment	2026-02-16 18:11:21.291
+d8be9cf8-87ec-4ed6-82b4-b268a01ef655	7ba61cb8-16fc-4a36-a7a4-7cde24e0dfdb	34252.8	2025-12-05 18:11:21.569	BANK	REF-30865	Seed payment	2026-02-16 18:11:21.638
+ebcee750-8c12-4039-a8f5-57001c43252d	fec11f06-3a3a-41c1-88f7-c6ba0cad740b	30488.64	2026-02-21 18:11:22.277	UPI	REF-73046	Seed payment	2026-02-16 18:11:22.347
+88bef3c7-5803-4510-b87e-54b52fef1610	492ae30f-095c-4476-b75a-c5385f3c7f79	49847	2026-02-05 18:11:22.42	BANK	REF-17389	Seed payment	2026-02-16 18:11:22.51
+2c83374a-3234-4b9b-a4bc-83d5da7b0ab7	8c546741-d394-47da-a6ee-783f5cf21138	36319.36	2025-12-21 18:11:22.585	CASH	REF-38951	Seed payment	2026-02-16 18:11:22.798
+34c67296-7b90-42ad-841c-5fedc229f6ca	92e1712d-895f-440a-83b3-029b4d6ef873	21485	2025-12-25 18:11:23.516	UPI	REF-42625	Seed payment	2026-02-16 18:11:23.575
+6474b0b8-a508-440b-92b8-ca590175b569	06b0663a-6572-48a9-b70f-23888e850266	17268.3	2026-01-28 18:11:23.699	CHEQUE	REF-75911	Seed payment	2026-02-16 18:11:23.766
+d1d1d1bf-0e48-4f95-8dd7-18757fd08326	c884643b-047f-4bb3-83ad-566304c71e49	13365	2025-12-01 18:11:24.038	BANK	REF-26649	Seed payment	2026-02-16 18:11:24.127
+5a9c63d0-0c81-4421-8144-1c178b80dd66	c8f11c5a-6a31-4cbd-a745-d23c41a97b05	9924	2026-02-15 18:11:24.259	CASH	REF-62070	Seed payment	2026-02-16 18:11:24.327
+00e9378c-ad15-4236-a1f0-91db049f6336	9c7df343-552a-4fc1-9647-d58c38522699	19302	2026-01-23 18:11:24.51	UPI	REF-21174	Seed payment	2026-02-16 18:11:24.581
+bd5303ee-7f6a-4674-afe0-70d3718c053d	802b11bb-431b-4e5e-a8dc-fd4fa1e81203	57616.64	2026-02-06 18:11:24.826	CASH	REF-98530	Seed payment	2026-02-16 18:11:24.878
+20a2eb4e-d208-4cc7-87a6-63839e6972f2	5ef5465d-360d-495e-b037-ceed8a4a529c	27174.22	2026-01-22 18:11:25.25	CHEQUE	REF-16438	Seed payment	2026-02-16 18:11:25.3
+92e93d27-c8a5-4443-a613-ebc8ebf3e68e	ca7cbac9-436b-4cbe-bb42-5aa649b0c46c	13732	2025-11-28 18:11:25.474	BANK	REF-50002	Seed payment	2026-02-16 18:11:25.529
+d18d01dc-4e39-4f5c-afe1-e3149edd8a0d	25af3344-992b-489f-be20-39eccc86f104	43682	2026-02-07 18:11:25.973	UPI	REF-64027	Seed payment	2026-02-16 18:11:26.03
+e8b8d6a0-5416-4cfa-aa7d-bbf6763a79bf	158c2ee0-5a69-4dcf-ad28-a6fad48120f6	8272.64	2026-01-16 18:11:26.081	CASH	REF-37118	Seed payment	2026-02-16 18:11:26.129
+b26bc3ef-d78d-45ef-a3b7-9d1ebf2bd1ed	703a2633-e524-4d5a-aa66-eabb294f6e1e	15192.45	2025-12-03 18:11:26.716	CASH	REF-76174	Seed payment	2026-02-16 18:11:26.776
+a6a11619-8c2e-4768-b88c-65be4f2c1c7e	a80067bc-1cbb-43cf-993e-d65d216ba7d2	13750.54	2026-01-18 18:11:26.956	CHEQUE	REF-60597	Seed payment	2026-02-16 18:11:27.019
+7fed1de8-c55b-4339-a5f4-71fba10fc999	48014a85-45d1-4df5-9c3a-4fe25c150b7d	13158	2026-01-03 18:11:27.076	CHEQUE	REF-78143	Seed payment	2026-02-16 18:11:27.136
+fb4675ba-2c62-42dd-abd9-de02fc3e46df	b1f4fe49-db2b-449c-9f0b-4c03b093cc97	5310	2026-02-18 18:11:27.377	CASH	REF-33412	Seed payment	2026-02-16 18:11:27.439
+7396ee36-4c52-4094-998f-5185d7babe67	b226f95c-b15a-48bb-922a-9b08ac727b3a	13270	2026-01-30 18:11:27.572	BANK	REF-36084	Seed payment	2026-02-16 18:11:27.64
+befac0d0-5b2f-4a18-b33d-8cf5f698caeb	474c1874-f26a-47b1-b180-c757d5a3c8e1	36043	2025-12-24 18:11:27.705	BANK	REF-44672	Seed payment	2026-02-16 18:11:27.772
+b4f33450-f806-41d3-8ea7-bf26f6207dc7	5e348a3c-fc95-42c9-ab50-cf068d4a737c	7309.05	2025-12-01 18:11:28.001	UPI	REF-85212	Seed payment	2026-02-16 18:11:28.054
+88bcfba0-a12f-46ca-8126-7ce2914e5a40	b69bfeb0-0823-4a43-a627-18490110f5a1	32820.9	2026-01-02 18:11:28.125	BANK	REF-13723	Seed payment	2026-02-16 18:11:28.182
+572a396e-5bfe-4b9d-9d84-8cff209e3cde	92aa05c6-7e88-44fb-aef6-e8ba37560b6d	14937	2025-12-29 18:11:28.292	UPI	REF-30613	Seed payment	2026-02-16 18:11:28.352
+84a69bea-daa1-452a-bc3d-7c600bc39284	94f4942b-fef1-49b6-87f5-134d855fd468	52250.4	2025-12-04 18:11:28.606	CASH	REF-66046	Seed payment	2026-02-16 18:11:28.666
+3279a5ac-63ec-4124-a4fe-e1c7755faf1d	1756255c-85a8-4c13-b654-7e62347e71dd	45112.32	2025-11-26 18:11:28.92	UPI	REF-97893	Seed payment	2026-02-16 18:11:28.975
+b6a3a469-11f1-4b1c-abb8-7f772a388ac2	bc3d58fc-2c42-4a85-95e8-509304e07f3f	55847.68	2025-12-19 18:11:29.077	CHEQUE	REF-51234	Seed payment	2026-02-16 18:11:29.138
+c76a1c19-33bd-4731-8448-8a79be85a97b	e2a26110-982b-4817-bc6b-38eea3ad3d2e	44666.88	2025-12-01 18:11:29.257	UPI	REF-64590	Seed payment	2026-02-16 18:11:29.319
+cae258d0-3881-4580-b86f-2055e671bee3	946dca5c-bad2-4d4f-9a04-36461be63b05	37033.12	2026-01-13 18:11:29.37	CHEQUE	REF-92199	Seed payment	2026-02-16 18:11:29.428
+c4e5637f-3022-4b49-8255-23f14a8de206	ee00d1ce-ff83-4f37-bb4a-2e09473c1008	30167	2026-02-16 18:11:29.846	CASH	REF-82840	Seed payment	2026-02-16 18:11:29.912
+b20fe8f2-aee1-4f5b-a832-49e88f4720a8	493c2ea7-8bfd-436b-90f5-2e6cda3e9043	2184	2026-01-21 18:11:30.274	CASH	REF-89747	Seed payment	2026-02-16 18:11:30.325
+37a8a553-ab6e-411b-927e-53fa703f4554	5954e66e-d5f1-4742-a28c-d520ddff99ef	10815	2025-12-05 18:11:30.555	BANK	REF-48872	Seed payment	2026-02-16 18:11:30.612
+2ce89cc8-fcf7-4874-8cf1-c85b8b131fc0	f7e00ffb-38c2-4d64-be48-2c0cc00d7ca1	59171.84	2025-12-29 18:11:30.736	CHEQUE	REF-21783	Seed payment	2026-02-16 18:11:30.797
+a0393b1e-8d0b-491d-9726-a3a2dc62d52e	9c1a7f66-6663-420a-a294-cbfe59711b51	47312.16	2026-02-08 18:11:30.985	UPI	REF-71783	Seed payment	2026-02-16 18:11:31.037
+16192807-c15a-4cf0-a449-062560223584	849e4218-dcac-42e6-b7d7-931b29b97252	15237.12	2025-12-14 18:11:15.032	UPI	REF-48444	Seed payment	2026-02-16 18:11:15.127
+211ab64d-2032-4f0f-a486-244d2bf44764	28a0e67e-fb87-4ec2-9bd3-b9f060233c71	30255.75	2026-01-03 18:11:15.312	BANK	REF-10017	Seed payment	2026-02-16 18:11:15.396
+58714889-dfca-4065-9b71-95b0b0334224	c0c1ddb8-62a0-49a8-87e7-d63b0bf9d508	12874.05	2026-02-11 18:11:15.968	BANK	REF-59048	Seed payment	2026-02-16 18:11:16.038
+4195bdca-57ec-48e2-9ab3-21977742f73b	27007a2c-0f30-4635-879c-064bc2a99b63	28960.96	2026-02-17 18:11:16.202	BANK	REF-40052	Seed payment	2026-02-16 18:11:16.278
+db530b40-cd8f-403a-bde0-d8dcca96a076	04b7246f-decb-4af1-9aec-c246ac0bf92e	35861	2026-01-20 18:11:16.746	CHEQUE	REF-64287	Seed payment	2026-02-16 18:11:16.807
+9ac6fc90-58f9-4aa8-96be-be5d0ee968a3	4287456a-0b89-4398-a6e1-c8d84592d7b3	22663	2026-01-27 18:11:16.915	CASH	REF-77013	Seed payment	2026-02-16 18:11:16.985
+04c11e5c-25f6-4cb4-80e7-7934f9369661	120eadf3-7b52-428d-a540-636602050cb2	1939	2026-02-11 18:11:17.095	BANK	REF-65512	Seed payment	2026-02-16 18:11:17.157
+0cf57f3b-db6f-4d1e-af65-4691c2269f3a	f8d0a561-dc29-47a5-ab96-5b104294e5ac	31631	2026-01-04 18:11:17.22	BANK	REF-37490	Seed payment	2026-02-16 18:11:17.28
+8419b0de-b23c-48e1-82b4-2ef9d6caf9fc	75a14b29-d81d-4d97-b6f5-6333e58aba21	41465.2	2025-12-11 18:11:17.887	CHEQUE	REF-60356	Seed payment	2026-02-16 18:11:17.966
+49a681ca-1e4a-4690-9df5-ec03ff7a347b	631fb26d-6064-461a-8a12-fc8528687524	52752	2025-12-22 18:11:18.155	UPI	REF-56147	Seed payment	2026-02-16 18:11:18.216
+9a245a52-3f87-4b06-a9d9-9f1b0c97c37a	af8f7397-6d3c-4d4d-8730-a38456c376c4	21509.12	2026-02-06 18:11:18.455	CHEQUE	REF-41170	Seed payment	2026-02-16 18:11:18.512
+09a1f9b6-4c5d-42a1-9ab3-394f326f2ab8	1bc2201c-4eea-4830-ae15-39e986f5ef7b	32115	2026-01-19 18:11:18.65	BANK	REF-21482	Seed payment	2026-02-16 18:11:18.726
+d82c1484-d014-4d9e-8966-a1f565887e27	e3e24f1b-98db-4e7b-b67a-5ca3c9f535b9	40965.12	2025-11-29 18:11:19.256	CHEQUE	REF-15345	Seed payment	2026-02-16 18:11:19.315
+0e75bc27-b01f-4413-b7a4-b8567da7ce0b	6d2551fc-65be-4ffb-bc3b-67848303cd5c	1587	2026-01-01 18:11:19.499	CHEQUE	REF-17365	Seed payment	2026-02-16 18:11:19.556
+b4ea2dd6-9aa3-4058-8cdf-ac907bf0c7b2	a654c6c3-700f-48c6-9837-9c4ef17d6346	40796	2025-12-01 18:11:19.739	CHEQUE	REF-79723	Seed payment	2026-02-16 18:11:19.813
+785fd047-1637-4631-a351-7d5c64d26ed5	06edc6c3-f80f-4ce9-8b01-1f77558fc11d	8567	2025-12-22 18:11:19.89	CASH	REF-56357	Seed payment	2026-02-16 18:11:19.957
+\.
+
+
+--
+-- Data for Name: User; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public."User" (id, name, email, password, role, "createdAt") FROM stdin;
+6ff5a13b-4fba-4356-aaea-a146d89774d8	Admin User	test@email.com	$2b$10$M7d4Gz4CpHNNRPUso3YbJ.6QKprG4ycADqdMi6NMU5Pj5jPgWQlt6	OWNER	2026-02-16 18:11:13.558
+c4ce80af-0e16-403b-bc0b-d208cdd3781e	Accounts Manager	accounts@msme.com	$2b$10$M7d4Gz4CpHNNRPUso3YbJ.6QKprG4ycADqdMi6NMU5Pj5jPgWQlt6	ACCOUNTS	2026-02-16 18:11:13.558
+f9e86ec6-cd8d-4be2-b9cc-a1c7bc62d0ee	Sales Executive	sales@msme.com	$2b$10$M7d4Gz4CpHNNRPUso3YbJ.6QKprG4ycADqdMi6NMU5Pj5jPgWQlt6	SALES	2026-02-16 18:11:13.558
+\.
+
+
+--
+-- Data for Name: Vendor; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public."Vendor" (id, name, phone, email, "creditTerms", notes, "createdAt") FROM stdin;
+782dbc98-aea5-449e-beb2-df604c62f030	Office Depot	9988748791	info@office.com	45	Prime vendor	2026-02-16 18:11:31.109
+ad257c5a-3001-4ee8-84e5-df009a33c0eb	Tech Supplies Inc	9988722399	info@tech.com	30	Prime vendor	2026-02-16 18:11:31.157
+00a56a86-dd3f-450a-8400-514253377224	City Properties (Rent)	9988717719	info@city.com	30	Prime vendor	2026-02-16 18:11:31.216
+f7f06152-9fa2-4caa-8784-2dca769c8ea6	Power Grid Co	9988778510	info@power.com	30	Prime vendor	2026-02-16 18:11:31.272
+0e0c2ba7-87b9-4fa6-9eb3-e242ce65b809	Fast Logistics	9988739831	info@fast.com	30	Prime vendor	2026-02-16 18:11:31.33
+266d428a-b95d-4b59-9c02-6bef1823ee0a	Raw Materials Ltd	9988798208	info@raw.com	15	Prime vendor	2026-02-16 18:11:31.407
+37cbe95a-a8de-4c28-9fa3-b00934153402	ABC Consultants	9988731792	info@abc.com	30	Prime vendor	2026-02-16 18:11:31.471
+fe8625e3-bf8b-4403-a962-b138095e35bd	Global Internet Services	9988743048	info@global.com	30	Prime vendor	2026-02-16 18:11:31.543
+0c6e7974-6882-4286-baf3-312ca03f938b	Clean & Shine Services	9988732858	info@clean.com	15	Prime vendor	2026-02-16 18:11:31.597
+\.
+
+
+--
+-- Data for Name: VendorInvoice; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public."VendorInvoice" (id, "vendorId", "invoiceNo", "invoiceDate", "dueDate", "invoiceAmount", "gstAmount", "gstRate", "isGstInclusive", "isGstEligible", "paidAmount", "outstandingAmount", status, description, "createdAt") FROM stdin;
+d31a01ee-fa9c-4a23-846f-1f3e0953b83e	782dbc98-aea5-449e-beb2-df604c62f030	SUP-OFF-8013	2025-12-24 18:11:35.537	2026-02-07 18:11:35.537	40547	2027.35	5	f	t	0	42574.35	OVERDUE	\N	2026-02-16 18:11:35.539
+8a18d36e-c110-4cc2-ac86-0f82537726e1	782dbc98-aea5-449e-beb2-df604c62f030	SUP-OFF-7409	2025-12-11 18:11:35.592	2026-01-25 18:11:35.592	12235	0	0	f	t	0	12235	OVERDUE	\N	2026-02-16 18:11:35.594
+26cf28b4-cbf3-4444-9e2e-2a90538989f3	782dbc98-aea5-449e-beb2-df604c62f030	SUP-OFF-6232	2026-01-16 18:11:35.651	2026-03-02 18:11:35.651	40216	2010.8	5	f	t	0	42226.8	UNPAID	\N	2026-02-16 18:11:35.653
+0fc79342-2fa3-4d57-9578-1e64102b35ed	782dbc98-aea5-449e-beb2-df604c62f030	SUP-OFF-1288	2025-12-29 18:11:35.713	2026-02-12 18:11:35.713	67607	8112.84	12	f	t	75719.84	0	PAID	\N	2026-02-16 18:11:35.715
+0381d094-7473-402a-98cc-79552482f461	782dbc98-aea5-449e-beb2-df604c62f030	SUP-OFF-1544	2025-12-22 18:11:35.836	2026-02-05 18:11:35.836	10947	0	0	f	f	10947	0	PAID	\N	2026-02-16 18:11:35.837
+0830d2ef-62da-40f5-bbac-605775d6b635	782dbc98-aea5-449e-beb2-df604c62f030	SUP-OFF-5093	2026-01-31 18:11:35.96	2026-03-17 18:11:35.96	19335	3480.3	18	f	t	22815.3	0	PAID	\N	2026-02-16 18:11:35.961
+70008aef-587e-4431-b65b-4af643ffd0a4	ad257c5a-3001-4ee8-84e5-df009a33c0eb	SUP-TEC-8852	2026-01-18 18:11:36.071	2026-02-17 18:11:36.071	54870	6584.4	12	f	t	61454.4	0	PAID	\N	2026-02-16 18:11:36.071
+9f78ad14-22dd-4e49-9138-9aca8ed76891	ad257c5a-3001-4ee8-84e5-df009a33c0eb	SUP-TEC-4970	2026-01-20 18:11:36.194	2026-02-19 18:11:36.194	4872	0	0	f	f	3533	1339	PARTIAL	\N	2026-02-16 18:11:36.195
+363a8bc1-3191-412f-803b-7079f76e52cc	00a56a86-dd3f-450a-8400-514253377224	SUP-CIT-7608	2026-01-14 18:11:36.307	2026-02-13 18:11:36.307	20022	3603.96	18	f	t	0	23625.96	OVERDUE	\N	2026-02-16 18:11:36.307
+598fd3a7-56ca-41d3-9622-a8998bec0aa7	00a56a86-dd3f-450a-8400-514253377224	SUP-CIT-6939	2026-01-24 18:11:36.352	2026-02-23 18:11:36.352	61653	11097.54	18	f	t	72750.54000000001	0	PAID	\N	2026-02-16 18:11:36.353
+81b11d3e-5332-437e-9852-7934f3c8ac1a	00a56a86-dd3f-450a-8400-514253377224	SUP-CIT-2806	2026-01-29 18:11:36.464	2026-02-28 18:11:36.464	13280	1593.6	12	f	t	14873.6	0	PAID	\N	2026-02-16 18:11:36.465
+10faea02-7ff0-40fd-8377-815a405292d7	00a56a86-dd3f-450a-8400-514253377224	SUP-CIT-1694	2026-01-25 18:11:36.561	2026-02-24 18:11:36.561	53738	2686.9	5	f	t	26634	29790.9	PARTIAL	\N	2026-02-16 18:11:36.562
+78aefe7d-6c0d-400d-aeb8-197ed36164da	00a56a86-dd3f-450a-8400-514253377224	SUP-CIT-9069	2026-01-02 18:11:36.69	2026-02-01 18:11:36.69	61497	3074.85	5	f	t	64571.85	0	PAID	\N	2026-02-16 18:11:36.691
+b63f0c4f-fcb1-4306-9a24-8e1f2104fb56	00a56a86-dd3f-450a-8400-514253377224	SUP-CIT-1217	2026-01-10 18:11:36.814	2026-02-09 18:11:36.814	42637	11938.36	28	f	t	0	54575.36	OVERDUE	\N	2026-02-16 18:11:36.815
+558c55a0-5720-4aec-a58e-0fd98be8d7f2	f7f06152-9fa2-4caa-8784-2dca769c8ea6	SUP-POW-2169	2025-12-26 18:11:36.865	2026-01-25 18:11:36.865	64493	7739.16	12	f	t	72232.16	0	PAID	\N	2026-02-16 18:11:36.866
+3bc4f020-3588-40e8-baef-1e2bd480e352	f7f06152-9fa2-4caa-8784-2dca769c8ea6	SUP-POW-2412	2026-01-21 18:11:36.975	2026-02-20 18:11:36.975	42830	0	0	f	t	42830	0	PAID	\N	2026-02-16 18:11:36.976
+fc30f478-a287-4607-a089-98544c035fe6	f7f06152-9fa2-4caa-8784-2dca769c8ea6	SUP-POW-3577	2025-12-05 18:11:37.081	2026-01-04 18:11:37.081	9747	0	0	f	t	9747	0	PAID	\N	2026-02-16 18:11:37.081
+9ed1d615-44c3-45dc-bc63-21e79ab7d260	f7f06152-9fa2-4caa-8784-2dca769c8ea6	SUP-POW-9527	2026-02-13 18:11:37.194	2026-03-15 18:11:37.194	12074	0	0	f	t	0	12074	UNPAID	\N	2026-02-16 18:11:37.194
+6007e363-20e8-481d-b96e-92538b9c2f3c	0e0c2ba7-87b9-4fa6-9eb3-e242ce65b809	SUP-FAS-2991	2026-01-05 18:11:37.251	2026-02-04 18:11:37.251	2412	675.36	28	f	t	1032	2055.36	PARTIAL	\N	2026-02-16 18:11:37.252
+797ebe05-79f6-4cf2-ab2a-3ec32ad373e7	0e0c2ba7-87b9-4fa6-9eb3-e242ce65b809	SUP-FAS-5181	2026-02-08 18:11:37.371	2026-03-10 18:11:37.371	8548	1025.76	12	f	t	9573.76	0	PAID	\N	2026-02-16 18:11:37.371
+a683c04b-de5d-44a9-9f12-92a6e2fcf99b	0e0c2ba7-87b9-4fa6-9eb3-e242ce65b809	SUP-FAS-5350	2026-02-12 18:11:37.494	2026-03-14 18:11:37.494	32910	3949.2	12	f	t	36859.2	0	PAID	\N	2026-02-16 18:11:37.495
+74ac4b50-73f4-4b2d-8eb8-88fc14811566	0e0c2ba7-87b9-4fa6-9eb3-e242ce65b809	SUP-FAS-8287	2026-02-01 18:11:37.62	2026-03-03 18:11:37.62	16568	828.4	5	f	t	17396.4	0	PAID	\N	2026-02-16 18:11:37.621
+e8c7c4d9-e01a-40e7-867c-d1dfc17e9344	0e0c2ba7-87b9-4fa6-9eb3-e242ce65b809	SUP-FAS-5720	2025-12-03 18:11:37.748	2026-01-02 18:11:37.748	42622	7671.96	18	f	t	50293.96	0	PAID	\N	2026-02-16 18:11:37.749
+b94b8f77-e396-4f14-abb9-e9caedffa2b6	0e0c2ba7-87b9-4fa6-9eb3-e242ce65b809	SUP-FAS-2312	2026-02-12 18:11:37.869	2026-03-14 18:11:37.869	60619	0	0	f	t	0	60619	UNPAID	\N	2026-02-16 18:11:37.87
+b3f8d789-7d4a-4af9-9388-81bbdac37d80	266d428a-b95d-4b59-9c02-6bef1823ee0a	SUP-RAW-8816	2025-11-18 18:11:37.919	2025-12-03 18:11:37.919	10340	2895.2	28	f	f	2483	10752.2	PARTIAL	\N	2026-02-16 18:11:37.92
+06207c5a-9c94-4171-9cf7-235a4ea89dda	266d428a-b95d-4b59-9c02-6bef1823ee0a	SUP-RAW-6202	2025-12-11 18:11:38.039	2025-12-26 18:11:38.039	24080	0	0	f	t	0	24080	OVERDUE	\N	2026-02-16 18:11:38.039
+efd6965c-76cb-4e19-a32a-0cecb6fe5368	37cbe95a-a8de-4c28-9fa3-b00934153402	SUP-ABC-1059	2026-01-08 18:11:38.096	2026-02-07 18:11:38.096	2183	611.24	28	f	t	2794.24	0	PAID	\N	2026-02-16 18:11:38.097
+cb44c895-3120-4598-b47c-d4015e8549d0	37cbe95a-a8de-4c28-9fa3-b00934153402	SUP-ABC-3756	2025-12-19 18:11:38.197	2026-01-18 18:11:38.197	59667	0	0	f	t	0	59667	OVERDUE	\N	2026-02-16 18:11:38.198
+4c204f02-79d3-4e06-a2be-193983e1a86d	fe8625e3-bf8b-4403-a962-b138095e35bd	SUP-GLO-6509	2026-02-06 18:11:38.257	2026-03-08 18:11:38.257	2683	751.24	28	f	t	3434.24	0	PAID	\N	2026-02-16 18:11:38.257
+a3a098af-5fca-4fb2-b52c-486911338823	fe8625e3-bf8b-4403-a962-b138095e35bd	SUP-GLO-5367	2026-02-07 18:11:38.38	2026-03-09 18:11:38.38	41101	2055.05	5	f	t	43156.05	0	PAID	\N	2026-02-16 18:11:38.381
+fe764e11-ba80-45cb-9d87-282eb9374744	fe8625e3-bf8b-4403-a962-b138095e35bd	SUP-GLO-5066	2025-12-16 18:11:38.494	2026-01-15 18:11:38.494	53384	2669.2	5	f	t	56053.2	0	PAID	\N	2026-02-16 18:11:38.495
+a125bb01-6c27-481c-bb39-975b2d1475b5	fe8625e3-bf8b-4403-a962-b138095e35bd	SUP-GLO-7758	2025-12-18 18:11:38.612	2026-01-17 18:11:38.612	64595	3229.75	5	f	t	0	67824.75	OVERDUE	\N	2026-02-16 18:11:38.614
+e86d320a-1983-4dba-87e3-286ce3bd6947	fe8625e3-bf8b-4403-a962-b138095e35bd	SUP-GLO-5853	2025-12-31 18:11:38.685	2026-01-30 18:11:38.685	30340	8495.2	28	f	t	0	38835.2	OVERDUE	\N	2026-02-16 18:11:38.686
+db7b4047-0963-4ca1-b410-7224c01c5cd1	fe8625e3-bf8b-4403-a962-b138095e35bd	SUP-GLO-8891	2025-12-11 18:11:38.733	2026-01-10 18:11:38.733	37807	4536.84	12	f	t	42343.84	0	PAID	\N	2026-02-16 18:11:38.734
+1dbcd740-0ca7-4068-8819-9e42909ad5dd	0c6e7974-6882-4286-baf3-312ca03f938b	SUP-CLE-2609	2026-01-19 18:11:38.839	2026-02-03 18:11:38.839	28254	1412.7	5	f	t	8190	21476.7	PARTIAL	\N	2026-02-16 18:11:38.84
+a3e8ace5-b375-4a19-a11a-b514fc776a3e	0c6e7974-6882-4286-baf3-312ca03f938b	SUP-CLE-8918	2025-12-03 18:11:38.947	2025-12-18 18:11:38.947	64792	3239.6	5	f	t	0	68031.6	OVERDUE	\N	2026-02-16 18:11:38.948
+461c1a54-0d79-4468-80b3-8420cfe53b3d	0c6e7974-6882-4286-baf3-312ca03f938b	SUP-CLE-7712	2026-02-16 18:11:38.994	2026-03-03 18:11:38.994	35000	4200	12	f	f	0	39200	UNPAID	\N	2026-02-16 18:11:38.994
+\.
+
+
+--
+-- Data for Name: VendorPayment; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public."VendorPayment" (id, "vendorInvoiceId", amount, "paymentDate", method, reference, notes, "createdAt") FROM stdin;
+61078307-24cd-4fe5-af5f-6152903db4f5	0fc79342-2fa3-4d57-9578-1e64102b35ed	75719.84	2026-01-03 18:11:35.713	UPI	TXN-373810	Payment to vendor	2026-02-16 18:11:35.778
+2fcfc2d5-a518-41e7-aabb-2b7fe10158cd	0381d094-7473-402a-98cc-79552482f461	10947	2025-12-23 18:11:35.836	BANK	TXN-252861	Payment to vendor	2026-02-16 18:11:35.893
+3d06cc7c-8588-4da8-9cb9-11c78c519c17	0830d2ef-62da-40f5-bbac-605775d6b635	22815.3	2026-02-02 18:11:35.96	BANK	TXN-362110	Payment to vendor	2026-02-16 18:11:36.015
+78c106ce-6afe-4f0a-9c53-001b7c3bfa52	70008aef-587e-4431-b65b-4af643ffd0a4	61454.4	2026-01-21 18:11:36.071	UPI	TXN-873002	Payment to vendor	2026-02-16 18:11:36.134
+572b5598-e8b7-43b5-b46c-307f49675e54	9f78ad14-22dd-4e49-9138-9aca8ed76891	3533	2026-01-25 18:11:36.194	UPI	TXN-472996	Payment to vendor	2026-02-16 18:11:36.254
+40571b39-28fc-4e85-ab2c-b07a826fc34c	598fd3a7-56ca-41d3-9622-a8998bec0aa7	72750.54000000001	2026-01-26 18:11:36.352	UPI	TXN-583469	Payment to vendor	2026-02-16 18:11:36.41
+16cb4020-10d2-46c8-beac-7017d8dc0566	81b11d3e-5332-437e-9852-7934f3c8ac1a	14873.6	2026-02-01 18:11:36.464	UPI	TXN-400803	Payment to vendor	2026-02-16 18:11:36.517
+bd5a21ab-eacd-4773-9553-ee2d1de98dca	10faea02-7ff0-40fd-8377-815a405292d7	26634	2026-01-27 18:11:36.561	UPI	TXN-703273	Payment to vendor	2026-02-16 18:11:36.631
+a070bb6b-16fe-4f28-883d-2f97ff636f0d	78aefe7d-6c0d-400d-aeb8-197ed36164da	64571.85	2026-01-06 18:11:36.69	BANK	TXN-287175	Payment to vendor	2026-02-16 18:11:36.751
+f0f04c6f-438c-43c4-9101-58701b68c33e	558c55a0-5720-4aec-a58e-0fd98be8d7f2	72232.16	2025-12-28 18:11:36.865	BANK	TXN-209556	Payment to vendor	2026-02-16 18:11:36.926
+75f81846-760f-4f50-a8af-456369b1d528	3bc4f020-3588-40e8-baef-1e2bd480e352	42830	2026-01-23 18:11:36.975	BANK	TXN-104207	Payment to vendor	2026-02-16 18:11:37.025
+4a26efd1-082e-4039-9932-54fba9119e09	fc30f478-a287-4607-a089-98544c035fe6	9747	2025-12-09 18:11:37.081	BANK	TXN-798577	Payment to vendor	2026-02-16 18:11:37.139
+6ae68352-2258-4290-a48d-edbc9a4299da	6007e363-20e8-481d-b96e-92538b9c2f3c	1032	2026-01-09 18:11:37.251	BANK	TXN-623306	Payment to vendor	2026-02-16 18:11:37.31
+5ea568d5-3147-442a-9b00-7361363db408	797ebe05-79f6-4cf2-ab2a-3ec32ad373e7	9573.76	2026-02-12 18:11:37.371	BANK	TXN-204483	Payment to vendor	2026-02-16 18:11:37.434
+bcf85c31-9dbe-41f2-ac63-4c4b37d64d90	a683c04b-de5d-44a9-9f12-92a6e2fcf99b	36859.2	2026-02-17 18:11:37.494	UPI	TXN-748954	Payment to vendor	2026-02-16 18:11:37.56
+d7f5b202-c4a5-4bb3-80d3-aefa7fb7c23a	74ac4b50-73f4-4b2d-8eb8-88fc14811566	17396.4	2026-02-06 18:11:37.62	BANK	TXN-639002	Payment to vendor	2026-02-16 18:11:37.687
+1e7a488e-01d6-452a-9911-b87b6a61d561	e8c7c4d9-e01a-40e7-867c-d1dfc17e9344	50293.96	2025-12-05 18:11:37.748	UPI	TXN-833992	Payment to vendor	2026-02-16 18:11:37.815
+4b4af75a-65ca-4203-a011-54b6e140a0d3	b3f8d789-7d4a-4af9-9388-81bbdac37d80	2483	2025-11-19 18:11:37.919	UPI	TXN-980051	Payment to vendor	2026-02-16 18:11:37.985
+045ae223-fc72-4f8f-adc7-185a57a71601	efd6965c-76cb-4e19-a32a-0cecb6fe5368	2794.24	2026-01-13 18:11:38.096	BANK	TXN-559647	Payment to vendor	2026-02-16 18:11:38.145
+2035db85-886a-40e3-bf2e-18ed2f2b227f	4c204f02-79d3-4e06-a2be-193983e1a86d	3434.24	2026-02-09 18:11:38.257	BANK	TXN-608594	Payment to vendor	2026-02-16 18:11:38.32
+bd4f9012-7113-4452-9b08-580e57b680bb	a3a098af-5fca-4fb2-b52c-486911338823	43156.05	2026-02-09 18:11:38.38	BANK	TXN-594591	Payment to vendor	2026-02-16 18:11:38.447
+925efef8-46e3-4824-9196-8c232412ef98	fe764e11-ba80-45cb-9d87-282eb9374744	56053.2	2025-12-21 18:11:38.494	UPI	TXN-997342	Payment to vendor	2026-02-16 18:11:38.556
+db80a266-aab3-43f9-8487-aec6fd0c3fda	db7b4047-0963-4ca1-b410-7224c01c5cd1	42343.84	2025-12-16 18:11:38.733	UPI	TXN-119723	Payment to vendor	2026-02-16 18:11:38.787
+f2cd971d-ae7a-4d8d-a7d0-e3d2e1fd41ea	1dbcd740-0ca7-4068-8819-9e42909ad5dd	8190	2026-01-20 18:11:38.839	UPI	TXN-208776	Payment to vendor	2026-02-16 18:11:38.898
+\.
+
+
+--
+-- Data for Name: _prisma_migrations; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public._prisma_migrations (id, checksum, finished_at, migration_name, logs, rolled_back_at, started_at, applied_steps_count) FROM stdin;
+0480995a-ef67-4c1f-ae1a-9c7d6afdc9d0	f66f45bd8b65b0ae1602ed41c405b97f5acf02fa9cc791a99f384eca8241dbb6	2026-02-15 07:17:50.265464+00	20260125065947_init_user	\N	\N	2026-02-15 07:17:49.845287+00	1
+19d9457c-f59f-40fb-b6d6-c0f6c239b060	8cae1095ef6db3ab6c1f03c07dd4fa33fb72d90a5222e97dca5085600602012f	2026-02-15 07:17:51.035368+00	20260125155407_add_customer	\N	\N	2026-02-15 07:17:50.504694+00	1
+8e4ec48f-1638-4708-abc2-8d1578339c60	6331b5e5f4a4554fb75ddf64749dab9d8c04fac495d5225b9063f740c470473b	2026-02-15 07:17:51.803302+00	20260126143828_add_invoice	\N	\N	2026-02-15 07:17:51.275056+00	1
+33bf397b-9450-4e01-b265-f7f4534bad77	641cb8d78c817b37afd9d3977c7a93265d6a1ea5f019aa2d3f7761738860d653	2026-02-15 07:17:52.559686+00	20260126150515_add_invoice	\N	\N	2026-02-15 07:17:52.03491+00	1
+87d693ed-d1d2-4060-92b1-c4d6024d0d95	606c8e44ccba5b88513f1b32517a5669304118b3d51b3e0bd7db1422d4279809	2026-02-15 07:17:53.309658+00	20260127153454_add_followups	\N	\N	2026-02-15 07:17:52.784476+00	1
+b8c7c4ea-0bfb-43f0-b009-7049a6352dcf	da6778bb4df4fdf2ff3e2be3390f288e97bf55c612a1f972e69adce45907c4bf	2026-02-15 07:17:54.054672+00	20260128161149_add_payments	\N	\N	2026-02-15 07:17:53.543991+00	1
+b70bec12-3d44-45f3-85b4-627628155771	3cb29310372831ffe3e71fa5177e973477391d18dce1e00ae57bf2b8f4686479	2026-02-15 07:17:54.800428+00	20260201094057_add_location_to_customer	\N	\N	2026-02-15 07:17:54.287027+00	1
+1cf7cb6c-6dad-45bf-8b4d-feaa110a8c6b	6700bbe6de69f95acd8c72dee909e3e1bbde1f667d3f15f05f62822aace7479b	2026-02-15 07:17:55.561718+00	20260205155222_cash_out	\N	\N	2026-02-15 07:17:55.025303+00	1
+e5b08113-838e-4ea2-9699-94d4b8808706	f074dd9c823e8b0e2f928a72c7e2026f23c0cbbb11888b7af69d96afe4d6f83f	2026-02-15 07:18:31.111526+00	20260215071830_rename_supplier_to_vendor_and_add_gst	\N	\N	2026-02-15 07:18:30.588947+00	1
+\.
+
+
+--
+-- Name: Customer Customer_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public."Customer"
+    ADD CONSTRAINT "Customer_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: ExpenseCategory ExpenseCategory_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public."ExpenseCategory"
+    ADD CONSTRAINT "ExpenseCategory_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: Expense Expense_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public."Expense"
+    ADD CONSTRAINT "Expense_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: FollowUp FollowUp_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public."FollowUp"
+    ADD CONSTRAINT "FollowUp_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: Invoice Invoice_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public."Invoice"
+    ADD CONSTRAINT "Invoice_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: PaymentEntry PaymentEntry_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public."PaymentEntry"
+    ADD CONSTRAINT "PaymentEntry_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: User User_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public."User"
+    ADD CONSTRAINT "User_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: VendorInvoice VendorInvoice_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public."VendorInvoice"
+    ADD CONSTRAINT "VendorInvoice_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: VendorPayment VendorPayment_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public."VendorPayment"
+    ADD CONSTRAINT "VendorPayment_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: Vendor Vendor_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public."Vendor"
+    ADD CONSTRAINT "Vendor_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: _prisma_migrations _prisma_migrations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public._prisma_migrations
+    ADD CONSTRAINT _prisma_migrations_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: Expense_expenseDate_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX "Expense_expenseDate_idx" ON public."Expense" USING btree ("expenseDate");
+
+
+--
+-- Name: FollowUp_invoiceId_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX "FollowUp_invoiceId_idx" ON public."FollowUp" USING btree ("invoiceId");
+
+
+--
+-- Name: Invoice_customerId_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX "Invoice_customerId_idx" ON public."Invoice" USING btree ("customerId");
+
+
+--
+-- Name: Invoice_dueDate_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX "Invoice_dueDate_idx" ON public."Invoice" USING btree ("dueDate");
+
+
+--
+-- Name: Invoice_status_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX "Invoice_status_idx" ON public."Invoice" USING btree (status);
+
+
+--
+-- Name: PaymentEntry_invoiceId_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX "PaymentEntry_invoiceId_idx" ON public."PaymentEntry" USING btree ("invoiceId");
+
+
+--
+-- Name: User_email_key; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX "User_email_key" ON public."User" USING btree (email);
+
+
+--
+-- Name: VendorInvoice_dueDate_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX "VendorInvoice_dueDate_idx" ON public."VendorInvoice" USING btree ("dueDate");
+
+
+--
+-- Name: VendorInvoice_vendorId_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX "VendorInvoice_vendorId_idx" ON public."VendorInvoice" USING btree ("vendorId");
+
+
+--
+-- Name: VendorPayment_vendorInvoiceId_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX "VendorPayment_vendorInvoiceId_idx" ON public."VendorPayment" USING btree ("vendorInvoiceId");
+
+
+--
+-- Name: Expense Expense_categoryId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public."Expense"
+    ADD CONSTRAINT "Expense_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES public."ExpenseCategory"(id) ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+--
+-- Name: Expense Expense_vendorId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public."Expense"
+    ADD CONSTRAINT "Expense_vendorId_fkey" FOREIGN KEY ("vendorId") REFERENCES public."Vendor"(id) ON UPDATE CASCADE ON DELETE SET NULL;
+
+
+--
+-- Name: FollowUp FollowUp_invoiceId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public."FollowUp"
+    ADD CONSTRAINT "FollowUp_invoiceId_fkey" FOREIGN KEY ("invoiceId") REFERENCES public."Invoice"(id) ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+--
+-- Name: Invoice Invoice_customerId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public."Invoice"
+    ADD CONSTRAINT "Invoice_customerId_fkey" FOREIGN KEY ("customerId") REFERENCES public."Customer"(id) ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+--
+-- Name: PaymentEntry PaymentEntry_invoiceId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public."PaymentEntry"
+    ADD CONSTRAINT "PaymentEntry_invoiceId_fkey" FOREIGN KEY ("invoiceId") REFERENCES public."Invoice"(id) ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+--
+-- Name: VendorInvoice VendorInvoice_vendorId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public."VendorInvoice"
+    ADD CONSTRAINT "VendorInvoice_vendorId_fkey" FOREIGN KEY ("vendorId") REFERENCES public."Vendor"(id) ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+--
+-- Name: VendorPayment VendorPayment_vendorInvoiceId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public."VendorPayment"
+    ADD CONSTRAINT "VendorPayment_vendorInvoiceId_fkey" FOREIGN KEY ("vendorInvoiceId") REFERENCES public."VendorInvoice"(id) ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+--
+-- PostgreSQL database dump complete
+--
+

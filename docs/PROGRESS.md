@@ -6,7 +6,7 @@ Task details live in `docs/DEVELOPMENT_PLAN.md`; schedule in `docs/ANTIGRAVITY_P
 **Current phase:** Phase 0
 
 ## Phase 0 — Baseline and safety (weeks 1–2)
-- [ ] P0-T1 Baseline snapshot and tag
+- [~] P0-T1 Baseline snapshot and tag (branch: feat/p0-t1-baseline-snapshot)
 - [ ] P0-T2 Tooling: Vitest, lint/typecheck scripts, CI, env validation
 - [ ] P0-T3 Port `scripts/` checks into Vitest tests
 - [ ] P0-T4 Hygiene: remove query logging, demo creds, baseline migration **[HUMAN GATE]**
