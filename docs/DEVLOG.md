@@ -1,6 +1,6 @@
 # DEVLOG.md — project diary (newest first)
 *Written by `/implement` (drafts) and `/end-of-day` (final). Plain language: what happened, what was decided, why.*
-## 2026-10-11 — Phase 0 Completion: P0-T3, P0-T4, P0-T5 (in review on feat/phase0-completion)
+## 2026-10-11 — Phase 0 Completion: P0-T3, P0-T4, P0-T5 (merged into dev via PR #12)
 - P0-T3: Ported all 5 verification scripts into pure Vitest tests in `tests/unit/` (`gst-calculation.test.ts`, `invoice-validation.test.ts`, `gst-kpis.test.ts`). Deleted `scripts/`.
 - P0-T4: Removed query logging from `lib/db/prisma.ts` (dev opt-in via `LOG_QUERIES=true`). Added structured logger `lib/logger.ts` with PII redaction. Added production guard to `prisma/seed.ts`. Moved credentials to `docs/dev-setup.md`. Replaced `db push` with `prisma migrate dev`. Confirmed 9 baseline migrations are up to date.
 - P0-T5: Scaffolded documentation skeleton across `docs/architecture/`, `docs/domain/`, `docs/adr/`, `docs/api/`, `docs/user-guide/`, and `docs/runbooks/`. Added `docs/domain/glossary.md` and `docs/adr/template.md`.
