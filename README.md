@@ -741,17 +741,16 @@ NEXTAUTH_URL="http://localhost:3000"
    npx prisma generate
    ```
 
-3. **Push Schema to Database:**
+3. **Apply Database Migrations:**
    ```bash
-   npx prisma db push
+   npx prisma migrate dev
    ```
-   *(Or run migrations via `npx prisma migrate dev`)*
 
-4. **Seed Database with Realistic Demo Data:**
+4. **Seed Database with Realistic Demo Data (Local Dev Only):**
    ```bash
    npx prisma db seed
    ```
-   *The seed script populates 3 test users across roles, 20 customers across major Indian cities, 9 vendors, 14 expense categories, and over 150 realistic invoices, payments, follow-ups, and expenses spanning the last 90 days.*
+   *The seed script populates test users across roles, customers across major Indian cities, vendors, expense categories, and realistic invoices, payments, follow-ups, and expenses.*
 
 ---
 
@@ -765,37 +764,28 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-### Default Demo Credentials
+### Local Developer Credentials & Testing
 
-When seeded using `npx prisma db seed`, the system creates the following accounts (Password: `password123` for all):
-
-| Role | Email | Password | Intended Use Case |
-| :--- | :--- | :--- | :--- |
-| **OWNER (Admin)** | `test@email.com` | `password123` | Full access to Executive Dashboard, Cash Flow Forecasting, and GST Leakage Audit |
-| **ACCOUNTS** | `accounts@msme.com` | `password123` | Operational access to Billing, Payables Queue, and Vendor settlements |
-| **SALES** | `sales@msme.com` | `password123` | Customer onboarding, invoice creation, and Collections Queue follow-ups |
+For local seeded accounts, testing credentials, and developer workflow details, please see **[docs/dev-setup.md](docs/dev-setup.md)**.
 
 ---
 
-### Running Test & Verification Scripts
+### Running Automated Tests & Quality Checks
 
-The repository includes standalone TypeScript verification scripts in the `scripts/` directory to test core calculation logic and database assertions:
+The repository uses **Vitest** for fast, deterministic unit and calculation tests:
 
 ```bash
-# Verify GST math (Inclusive vs Exclusive tax calculations)
-npx -y tsx scripts/verify-gst-calculation.ts
+# Run unit test suite
+npm test
 
-# Verify Dashboard GST Aggregations and Net GST Payable metrics
-npx -y tsx scripts/verify-gst-kpis.ts
+# Run TypeScript compilation check
+npm run typecheck
 
-# Verify Invoice Outstanding Balance & Payment Ledger transactions
-npx -y tsx scripts/verify-invoice-calculation.ts
+# Run ESLint check
+npm run lint
 
-# Verify Database Mandatory Constraints
-npx -y tsx scripts/verify-mandatory-invoice.ts
-
-# Verify Optional & Nullable Field Handling
-npx -y tsx scripts/verify-optional-invoice.ts
+# Check code formatting
+npm run format:check
 ```
 
 ---
@@ -804,7 +794,7 @@ npx -y tsx scripts/verify-optional-invoice.ts
 
 ### Adding a New Operational Entity
 1. **Define Schema:** Add your model to `prisma/schema.prisma` with appropriate indexes and foreign keys.
-2. **Migrate:** Run `npx prisma db push` or `npx prisma migrate dev --name add_new_entity`.
+2. **Migrate:** Run `npx prisma migrate dev --name <migration_name>`.
 3. **Add Server Actions:** Implement validation and mutations inside an `actions.ts` file within your route folder. Always wrap updates affecting balances in `prisma.$transaction`.
 4. **Register in Export Engine:** Add your entity mapping inside `app/api/export/route.ts` to automatically support Excel and PDF report downloads.
 5. **Update Navigation:** Register your route inside the `navGroups` array in `components/Sidebar.tsx`.

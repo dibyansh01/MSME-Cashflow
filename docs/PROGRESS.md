@@ -8,9 +8,9 @@ Task details live in `docs/DEVELOPMENT_PLAN.md`; schedule in `docs/ANTIGRAVITY_P
 ## Phase 0 — Baseline and safety (weeks 1–2)
 - [x] P0-T1 Baseline snapshot and tag (merged 2026-10-11)
 - [x] P0-T2 Tooling: Vitest, lint/typecheck scripts, CI, env validation (merged 2026-10-11)
-- [ ] P0-T3 Port `scripts/` checks into Vitest tests
-- [ ] P0-T4 Hygiene: remove query logging, demo creds, baseline migration **[HUMAN GATE]**
-- [ ] P0-T5 Docs skeleton (`docs/` tree, glossary, ADR template)
+- [~] P0-T3 Port `scripts/` checks into Vitest tests (branch: feat/phase0-completion)
+- [~] P0-T4 Hygiene: remove query logging, demo creds, baseline migration **[HUMAN GATE]** (branch: feat/phase0-completion)
+- [~] P0-T5 Docs skeleton (`docs/` tree, glossary, ADR template) (branch: feat/phase0-completion)
 
 ## Phase 1 — Foundation (weeks 1–5)
 - [ ] P1-T1 `lib/money.ts` + ADR
