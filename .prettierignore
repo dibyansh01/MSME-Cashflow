@@ -1,0 +1,25 @@
+node_modules
+.next
+out
+build
+dist
+coverage
+*.tsbuildinfo
+next-env.d.ts
+docs/fixtures
+prisma/
+.agent
+*.md
+
+# Legacy prototype directories (format incrementally when touched by tasks)
+app/
+components/
+lib/analytics/
+lib/collections/
+lib/constants/
+lib/db/
+lib/services/
+lib/utils/
+lib/authOptions.ts
+lib/utils.ts
+scripts/
