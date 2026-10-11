@@ -1,5 +1,11 @@
 # DEVLOG.md — project diary (newest first)
 *Written by `/implement` (drafts) and `/end-of-day` (final). Plain language: what happened, what was decided, why.*
+
+## 2026-10-11 — P1-T1: Money helpers & Decimal migration plan (in review on `feat/p1-t1-money-helpers`)
+- Implemented `lib/money.ts` providing pure Decimal arithmetic (`d`, `zero`, `add`, `sub`, `mul`, `div`, `pct`, `roundHalfUp2`, `roundBankers2`, `allocate`, `eq`, `gt`, `gte`, `lt`, `lte`, `isZero`, `isPositive`, `isNegative`, `formatINR`). Zero new dependencies (reuses `Prisma.Decimal` backed by `decimal.js`).
+- Addressed banking-grade financial rounding: unrounded intermediate calculations, round-half-up for Indian GST/statutory compliance, banker's round-half-to-even for banking reconciliation, zero-loss multi-part apportionment via largest-remainder algorithm (`allocate`), and residual tax balancing (`tax = gross - base`).
+- Added full unit test suite `tests/unit/money.test.ts` (23 tests passing) validating exact precision, Indian comma parsing (`1,23,456.78`), 10,000-iteration accumulation drift, GST back-calculations, and INR formatting.
+- Authored ADR 0002 (`docs/adr/0002-money-decimal-representation.md`) documenting money representation, rounding rules, and the P1-T2 migration roadmap (`Float -> Decimal(14,2)`).
 ## 2026-10-11 — Phase 0 Completion: P0-T3, P0-T4, P0-T5 (merged into dev via PR #12)
 - P0-T3: Ported all 5 verification scripts into pure Vitest tests in `tests/unit/` (`gst-calculation.test.ts`, `invoice-validation.test.ts`, `gst-kpis.test.ts`). Deleted `scripts/`.
 - P0-T4: Removed query logging from `lib/db/prisma.ts` (dev opt-in via `LOG_QUERIES=true`). Added structured logger `lib/logger.ts` with PII redaction. Added production guard to `prisma/seed.ts`. Moved credentials to `docs/dev-setup.md`. Replaced `db push` with `prisma migrate dev`. Confirmed 9 baseline migrations are up to date.

@@ -11,6 +11,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "format:check": "prettier --check .",
+    "format": "prettier --write .",
     "postinstall": "prisma generate"
   },
   "dependencies": {
