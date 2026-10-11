@@ -13,7 +13,7 @@ Task details live in `docs/DEVELOPMENT_PLAN.md`; schedule in `docs/ANTIGRAVITY_P
 - [x] P0-T5 Docs skeleton (`docs/` tree, glossary, ADR template) (merged 2026-10-11)
 
 ## Phase 1 — Foundation (weeks 1–5)
-- [ ] P1-T1 `lib/money.ts` + ADR
+- [~] P1-T1 `lib/money.ts` + ADR (branch: `feat/p1-t1-money-helpers`)
 - [ ] P1-T2 Money columns → Decimal **[HUMAN GATE]**
 - [ ] P1-T3 Tenancy foundation (Organization, Membership, tenant client, RLS) **[HUMAN GATE]**
 - [ ] P1-T4 Move all data access to tenant client + cross-tenant tests

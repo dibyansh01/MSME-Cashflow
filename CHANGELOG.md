@@ -1,6 +1,13 @@
 # Changelog
 ## [Unreleased]
 ### Added
+- **P1-T1 Money Helpers & Decimal Migration Plan**:
+  - Implemented canonical money module (`lib/money.ts`) utilizing `Prisma.Decimal` (zero new dependencies).
+  - Enforced banking-grade financial rounding and reconciliation: unrounded intermediate calculations, statutory round-half-up (`roundHalfUp2`) per Section 170 CGST Act, banker's round-half-to-even (`roundBankers2`), zero-loss multi-part allocation (`allocate`), and residual tax balancing.
+  - Added robust parser supporting Indian comma numbering (`1,23,456.78`), currency symbols, leading decimals (`.50`), and parenthetical accounting formats (`(1,23,456.78)`), with strict rejection of embedded hyphens and dates.
+  - Authored ADR 0002 (`docs/adr/0002-money-decimal-representation.md`) detailing money representation, rounding rules, and the P1-T2 migration roadmap (`Float -> Decimal(14,2)`).
+  - Added unit test suite in `tests/unit/money.test.ts` (26 tests passing) validating exact precision, Indian rounding, zero-loss proration, 10,000-iteration drift resistance, and INR formatting.
+
 - **P0-T5 Docs Skeleton**:
   - Scaffolded full documentation tree (`docs/architecture/`, `docs/domain/`, `docs/adr/`, `docs/api/`, `docs/user-guide/`, `docs/runbooks/`).
   - Added canonical domain glossary in `docs/domain/glossary.md` enforcing standard terminology.
