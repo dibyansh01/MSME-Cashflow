@@ -6,6 +6,11 @@ import bcrypt from 'bcrypt'
 
 dotenv.config()
 
+if (process.env.NODE_ENV === 'production') {
+  console.error('ERROR: Database seeding is forbidden in production environments (NODE_ENV=production).')
+  process.exit(1)
+}
+
 const connectionString = `${process.env.DATABASE_URL}`
 const pool = new Pool({ connectionString })
 const adapter = new PrismaPg(pool)
